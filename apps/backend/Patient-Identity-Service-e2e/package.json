@@ -1,0 +1,26 @@
+{
+  "name": "@org/Patient-Identity-Service-e2e",
+  "version": "0.0.1",
+  "private": true,
+  "nx": {
+    "implicitDependencies": [
+      "@org/Patient-Identity-Service"
+    ],
+    "targets": {
+      "e2e": {
+        "executor": "@nx/jest:jest",
+        "outputs": [
+          "{projectRoot}/test-output/jest/coverage"
+        ],
+        "options": {
+          "jestConfig": "apps/backend/Patient-Identity-Service-e2e/jest.config.cts",
+          "passWithNoTests": true
+        },
+        "dependsOn": [
+          "@org/Patient-Identity-Service:build",
+          "@org/Patient-Identity-Service:serve"
+        ]
+      }
+    }
+  }
+}

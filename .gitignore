@@ -48,3 +48,7 @@ Thumbs.db
 .nx/polygraph
 .nx/self-healing
 vitest.config.*.timestamp*
+
+# Next.js
+.next
+out

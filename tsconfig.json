@@ -11,6 +11,15 @@
     },
     {
       "path": "./apps/backend/Patient-Identity-Service"
+    },
+    {
+      "path": "./libs/database"
+    },
+    {
+      "path": "./libs/logger"
+    },
+    {
+      "path": "./libs/Filter"
     }
   ]
 }

@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  
+
+  patients-db:
+
+    image: postgres:16-alpine
+    container_name: patients-db
+
+    environment:
+      POSTGRES_USER: "yehezou"
+      POSTGRES_PASSWORD: "eze10011"
+      POSTGRES_DB: "patients-db"
+
+    ports:
+      - "5432:5432"
+
+    volumes:
+      - patients_data:/var/lib/postgresql/data
+
+volumes:
+  patients_data:

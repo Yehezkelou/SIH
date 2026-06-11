@@ -1,6 +1,8 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
+    "composite": true,
+    "rootDir": ".",
     "outDir": "dist",
     "tsBuildInfoFile": "dist/tsconfig.lib.tsbuildinfo",
     "emitDeclarationOnly": false,
@@ -8,7 +10,14 @@
     "types": ["node"]
   },
   "include": ["src/**/*.ts"],
-  "references": [],
+  "references": [
+    {
+      "path": "../logger/tsconfig.lib.json"
+    },
+    {
+      "path": "../contracts/tsconfig.lib.json"
+    }
+  ],
   "exclude": [
     "vite.config.ts",
     "vite.config.mts",

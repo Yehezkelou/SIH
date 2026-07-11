@@ -1,0 +1,45 @@
+import { Column, CreateDateColumn, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { AdmissionDocumentType } from "./admission.enum";
+import { Admission } from "./admission.entity";
+
+
+
+
+
+@Entity("AdmissionDocument")
+export class AdmissionDocument {
+
+    @PrimaryGeneratedColumn("uuid")
+    id!: string
+
+    // reference a l'admission
+    @Index()
+    @Column({type : "uuid"})
+    admissionId!: string
+
+   
+    // url 
+    @Column({type : "string", nullable : true})
+    url!: string 
+
+    // champ pour l'admission document
+    @Index()
+    @Column({type : "enum" , enum : AdmissionDocumentType})
+    documentType!: string
+
+    @Index()
+    @Column({type : "timestamp", nullable : true})
+    attachedAt!: Date
+
+    // relation inverse 
+     @ManyToOne(() => Admission, ad => ad.documents)
+     @JoinColumn({name : "admissionId"})
+     admission!: Admission
+
+
+     @UpdateDateColumn()
+     updatedAt!: Date
+
+     @CreateDateColumn()
+     createdAt!: Date
+}

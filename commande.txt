@@ -1,0 +1,8 @@
+
+// create new micro-service 
+pnpm nx g @nx/nest:app apps/backend/name-microservice 
+
+OR
+
+npx nx g @nx/nest:app apps/backend/name-microservice  
+

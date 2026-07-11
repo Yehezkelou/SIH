@@ -24,7 +24,7 @@ export const CreatePatientSchema = z.object({
             .max(100, "le doit faire maximum 100 caratere"),
 
         age : z
-            .int("l'age ne peut pas etre un nombre a virgule")
+            .number("l'age ne peut pas etre un nombre a virgule")
             .max(400, "l'age ne peut pas atteindre ce chiffer"),
 
         genre : z
@@ -41,7 +41,6 @@ export const CreatePatientSchema = z.object({
         numero : z
             .string()
             .max(10, "le numero doit faire 10 chiffre")
-            .regex(/^\d+$/, "le numero doit contenir des chiffres")
             .refine((num) => {
                 const prefixe = ["01", "05", "07"]
                 return prefixe.some((pre) => num.startsWith(pre))
@@ -65,7 +64,7 @@ export const CreatePatientSchema = z.object({
 
     // validation concernant les donnée liées a l'identifiant du createur
     CreatedBy : z.object({
-        createdBy : z.uuid()
+        createdBy : z.uuid().optional()
     })
 })
 
@@ -73,21 +72,42 @@ export const CreatePatientSchema = z.object({
 
 // Schema de validation des donnée entrant pour la validation
 export const UpdatePatientSchema = CreatePatientSchema.partial().omit({
-    uniqueIdentity : true    
+    uniqueIdentity : true,
+    CreatedBy : true
 })
 
 
 //Schema de validation des donnée de recherche entrant 
 export const SearchPatientSchema = z.object({
-    q : z.string().trim().min(2, "Trop court").max(50, "trop long").optional(),
+
+    // query de recherche
+
+    // civil identity
+    nom : z.string().trim().min(2, "Trop court").max(50, "trop long").optional(),
+    prenom : z.string().trim().min(2, "Trop court").max(50, "trop long").optional(),
+    age : z.coerce.number().int().optional(),
+    genre : z.enum(["M", "F"]).optional(),
+
+    // contact
+    email : z.email().optional(),
+    numero : z.string().optional(),
+
+    //unique identity
+    numSecuSocial : z.string().optional(),
+    numIdentityNational : z.string().optional(),
+    uniquePatientId : z.string().optional(),
+  
+
+    // pagination 
     page: z.coerce.number().positive().int().default(1),
     limit : z.coerce.number().int().nonnegative().min(5).max(50).default(10),
+    
+    // tri
     sort : z.enum(["asc", "desc"]).default("desc")
 })
 
 
 // Type infére typescripte 
-
 export type CreatePatientInput = z.infer<typeof CreatePatientSchema>
 export type UpdatePatientInput = z.infer<typeof UpdatePatientSchema>
 export type SearchPatientInput = z.infer<typeof SearchPatientSchema>

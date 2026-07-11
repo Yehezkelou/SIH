@@ -22,6 +22,11 @@ export class PatientPipeValidator implements PipeTransform {
         if(!metadata.metatype) return value
 
         const schema = this.reflector.get<z.ZodType>(ZOD_SCHEMA_METADATA, metadata.metatype)
+
+        if(!schema) {
+            return value
+        }
+        
         const validate = schema.safeParse(value)
 
 

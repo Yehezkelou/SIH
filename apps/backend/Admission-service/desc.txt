@@ -1,0 +1,27 @@
+Voici le workflow interne (le processus) du service d'admission, expliqué simplement en français :
+
+Le service d'admission s'occupe de gérer le parcours d'un patient à partir du moment où il arrive à l'hôpital jusqu'à sa sortie. Voici comment ça se passe étape par étape :
+
+1. L'enregistrement du patient (Création de l'Admission)
+Quand un patient arrive, on crée un dossier d'Admission pour lui.
+
+On le relie à son identité (grâce à son ID de patient).
+On indique pourquoi il est là (le motif : urgence, consultation prévue, etc.), qui est le médecin responsable, et le statut de son admission (en cours, en attente, etc.).
+2. Le Séjour Médical (L'Encounter)
+L'admission est directement liée à ce qu'on appelle un "Encounter" (une rencontre médicale ou un séjour). C'est le cœur de la visite du patient : ça représente son passage actif à l'hôpital. Chaque admission a son propre "Encounter".
+
+3. Les Déplacements dans l'hôpital (Encounter Movements)
+Si le patient doit être hospitalisé, il va sûrement bouger. Par exemple, passer des Urgences vers une Chambre, puis vers le Bloc Opératoire. Le service trace tous ces changements de lits ou de services pour savoir exactement où se trouve le patient à tout moment.
+
+4. Les Informations Pratiques autour de l'admission
+Pendant la création du dossier, on peut aussi enregistrer :
+
+Les Accompagnants (AdmissionCompanion) : La famille ou les proches présents avec le patient, ou les personnes à contacter.
+Les Documents (AdmissionDocument) : On peut scanner et attacher des papiers importants (carte d'identité, lettre de recommandation d'un autre médecin, etc.).
+5. Qui va payer ? (Les Payeurs / AdmissionPayer)
+Le service enregistre comment les soins vont être payés. Il peut y avoir plusieurs payeurs : une partie par le patient lui-même, une autre par son assurance santé (mutuelle), ou même par une entreprise.
+
+6. La Sortie du patient (Discharge)
+Quand le patient a fini ses soins et rentre chez lui, le processus se termine. On note la date de sortie réelle (actualDischarge) et le statut de l'admission passe à "Terminé".
+
+En résumé : Le patient arrive ➡️ on crée l'admission et son séjour ➡️ on note qui l'accompagne et qui va payer ➡️ on suit ses déplacements de chambre en chambre ➡️ il sort de l'hôpital et on ferme le dossier.

@@ -1,4 +1,4 @@
-import {Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn} from "typeorm"
+import { Column, CreateDateColumn, Entity, Index, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm"
 
 
 
@@ -6,33 +6,47 @@ import {Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColu
 export class Patient {
 
     @PrimaryGeneratedColumn("uuid")
-    id!: string; 
+    id!: string;
+
+    // NDPU (numéro de dossier patient unique)
+    @Index()
+    @Column({ length: 255, type: "varchar", unique: true, nullable: false })
+    uniquePatientId!: string;
+
 
     // identité civile
-    @Column({length : 255, type : "varchar"}) 
+    @Index()
+    @Column({ length: 255, type: "varchar" })
     nom!: string;
 
-    @Column({length : 255, type : "varchar"})
+    @Index()
+    @Column({ length: 255, type: "varchar" })
     prenom!: string
 
-    @Column({length : 255, type : "bit"})
+    @Index()
+    @Column({ type: "integer" })
     age!: number;
 
-    @Column({type : "enum" , enum : ["M", "F"]})
+    @Index()
+    @Column({ type: "enum", enum: ["M", "F"] })
     genre!: "M" | "F";
 
     // donné de contact 
-    @Column({length : 255, type : "varchar"})
-    email!: string 
+    @Index()
+    @Column({ length: 255, type: "varchar" })
+    email!: string
 
-    @Column({length : 255, type : "varchar"})
+    @Index()
+    @Column({ length: 255, type: "varchar" })
     numero!: string
 
-    // identifiant unique 
-    @Column({length : 255, type : "varchar", unique: true})
+    // identifiant unique
+    @Index()
+    @Column({ length: 255, type: "varchar", unique: true })
     numSecuSocial!: string
 
-    @Column({length : 255 , type : "varchar", unique : true})
+    @Index()
+    @Column({ length: 255, type: "varchar", unique: true })
     numIdentityNational!: string
 
     // metadonnée systeme
@@ -42,6 +56,6 @@ export class Patient {
     @UpdateDateColumn()
     updatedAt!: Date;
 
-    @Column({length : 255, type : "varchar", nullable : false})
-    createdBy!: string 
+    @Column({ length: 255, type: "varchar", nullable: true })
+    createdBy!: string
 }

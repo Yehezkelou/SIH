@@ -20,6 +20,12 @@
     },
     {
       "path": "./libs/Filter"
+    },
+    {
+      "path": "./apps/backend/Admission-service-e2e"
+    },
+    {
+      "path": "./apps/backend/Admission-service"
     }
   ]
 }

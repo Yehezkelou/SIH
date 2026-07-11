@@ -5,9 +5,6 @@ import { Logger } from "nestjs-pino"
 
 
 
-
-
-
 @Injectable()
 export abstract class SharedBaseExceptionFilter implements ExceptionFilter {
 
@@ -31,10 +28,11 @@ export abstract class SharedBaseExceptionFilter implements ExceptionFilter {
     }
 
     // formdata 
-    private formaData(status : number, pathRequest : string, message : string | object){
+    private formaData(status : number, pathRequest : string, message : string | object, data?: any){
         return {
             status,
             message,
+            data,
             timestamp : new Date().toISOString(),
             path : pathRequest
         }
@@ -46,8 +44,12 @@ export abstract class SharedBaseExceptionFilter implements ExceptionFilter {
         const response = ctx.getResponse<Response>()
         const request = ctx.getRequest<Request>()
         const {httpAdapter} = this.httpAdapterHost
+        const exceptionResponse = exception instanceof HttpException ? exception.getResponse() : null
 
 
+
+        // recuperer un objet dans l'erreur si elle exist 
+        const getObjectException = typeof exceptionResponse === "object"  && exceptionResponse !== null;
 
         // get status adater
         const httpStatus = 
@@ -65,7 +67,7 @@ export abstract class SharedBaseExceptionFilter implements ExceptionFilter {
             this.logger.error(`HTTP Error : ${httpStatus} - path : ${request.url}`)
 
 
-        httpAdapter.reply(response, this.formaData(httpStatus, request.url, message), httpStatus)
+        httpAdapter.reply(response, this.formaData(httpStatus, request.url, message, getObjectException ? (exceptionResponse as any).data : null), httpStatus)
     }
 
     //switch to grpc 

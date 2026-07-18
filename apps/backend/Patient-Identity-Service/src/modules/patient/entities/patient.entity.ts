@@ -24,12 +24,7 @@ export class Patient {
     @Column({ length: 255, type: "varchar", unique: true, nullable: false })
     uniquePatientId!: string;
 
-    // Ancien numéro de dossier (repris de l'ancien système lors d'une migration)
-    // Sert uniquement de trace/référence historique, pas d'identifiant actif
-    @Column({ length: 255, type: "varchar", nullable: true })
-    ancienNumeroDossier?: string;
-
-
+  
     // ===== identité civile =====
 
     @Index()
@@ -58,10 +53,6 @@ export class Patient {
     @Column({ length: 255, type: "varchar", nullable: true })
     lieuNaissance?: string;
 
-    // Chemin/URL vers la photo d'identité du patient (vérification visuelle au guichet)
-    @Column({ length: 255, type: "varchar", nullable: true })
-    photo?: string;
-
 
     // ===== filiation =====
     // Utile pour identifier un patient mineur ou distinguer deux homonymes
@@ -72,6 +63,11 @@ export class Patient {
     @Column({ length: 255, type: "varchar", nullable: true })
     nomMere?: string;
 
+    @Column({type: "varchar", length : 255, nullable : true})
+    tuteur?: string
+
+    @Column({length: 255, type: "varchar", nullable : true})
+    liensParent?: string
 
     // ===== donné de contact =====
 

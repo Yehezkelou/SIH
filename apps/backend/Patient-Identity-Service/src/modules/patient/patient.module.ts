@@ -9,24 +9,30 @@ import { PatientPipeValidator } from "../../shared/pipes/patient.pipe";
 import { patientController } from "./controllers/patient.controller";
 import { PatientSubscriber } from "./entities/patient.subscriber";
 import { PatientHistory } from "./entities/patient.history.entity";
+import { ArchivDossier } from "./entities/archivDossier.entity";
+import { ArchivDossierHistory } from "./entities/archivDossier.history.entity";
+import { ArchivDossierSubscriber } from "./entities/archivDossier.subscriber";
 
 
 @Module({
     imports: [
-        DatabaseModule.forRoot([Patient, PatientHistory]),
+        DatabaseModule.forRoot([Patient, PatientHistory, ArchivDossier, ArchivDossierHistory]),
         LoggerModuleGlobale.forRoot('PatientIdentityService')
     ],
-    
-    
+
+
     controllers : [patientController],
     providers : [
 
 
         // gerer les repository patient
-        PatientRepository, 
+        PatientRepository,
 
         // gerer les subscriber patient
         PatientSubscriber,
+
+        // gerer les subscriber archiv dossier
+        ArchivDossierSubscriber,
 
         // gerer les filter exception patient
         {

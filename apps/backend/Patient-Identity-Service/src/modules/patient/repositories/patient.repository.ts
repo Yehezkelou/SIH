@@ -2,7 +2,7 @@ import { DataSource, ILike, Raw, Repository } from "typeorm";
 import { Patient } from "../entities/patient.entity";
 import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
 import { CreatePatientInput, SearchPatientInput, UpdatePatientInput } from "../validator";
-import { PatientIdGenerated } from "../../../helpers/decorator/uniquePatientIdGenerated";
+import { PatientIdGenerated } from "../../../helpers/func/uniquePatientIdGenerated";
 
 
 

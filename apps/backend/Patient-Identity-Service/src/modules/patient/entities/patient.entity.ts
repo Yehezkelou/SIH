@@ -1,4 +1,5 @@
-import { Column, CreateDateColumn, DeleteDateColumn, Entity, Index, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm"
+import { Column, CreateDateColumn, DeleteDateColumn, Entity, Index, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm"
+import { ArchivDossier } from "./archivDossier.entity";
 
 
 /**
@@ -24,7 +25,7 @@ export class Patient {
     @Column({ length: 255, type: "varchar", unique: true, nullable: false })
     uniquePatientId!: string;
 
-  
+    
     // ===== identité civile =====
 
     @Index()
@@ -53,6 +54,11 @@ export class Patient {
     @Column({ length: 255, type: "varchar", nullable: true })
     lieuNaissance?: string;
 
+    // lien entre le patient et ses dossiers
+    @OneToMany(() => ArchivDossier, (archivDossier) => archivDossier.patient)
+    archivDossier?: ArchivDossier[]
+
+
 
     // ===== filiation =====
     // Utile pour identifier un patient mineur ou distinguer deux homonymes
@@ -66,11 +72,8 @@ export class Patient {
     @Column({type: "varchar", length : 255, nullable : true})
     tuteur?: string
 
-    @Column({length: 255, type: "varchar", nullable : true})
-    liensParent?: string
 
     // ===== donné de contact =====
-
     @Index()
     @Column({ length: 255, type: "varchar" })
     email!: string

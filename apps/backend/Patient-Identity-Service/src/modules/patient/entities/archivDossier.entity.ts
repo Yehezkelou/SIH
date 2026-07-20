@@ -1,4 +1,5 @@
-import { Column, CreateDateColumn, Entity, Index, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm"
+import { Column, CreateDateColumn, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm"
+import { Patient } from "./patient.entity";
 
 
 /**
@@ -17,6 +18,12 @@ export class ArchivDossier {
     // Identifiant technique interne (clé primaire), généré automatiquement
     @PrimaryGeneratedColumn("uuid")
     id!: string;
+
+
+    // relation avec le patient 
+    @ManyToOne(() => Patient, (patient) => patient.archivDossier)
+    patient!: Patient
+    
 
     // Référence vers le dossier patient auquel ce document est rattaché
     @Index()

@@ -47,6 +47,8 @@ import { ArchivDossierSubscriber } from "./entities/archivDossier.subscriber";
         }
     ]
 })
+
+
 export class PatientModule {} 
 
 

@@ -18,7 +18,7 @@ export class PatientRepository extends Repository<Patient> {
 
 
     //creation d'un patient 
-    async createNewPatient(data: CreatePatientInput) {
+    async createNewPatient(data: CreatePatientInput, numeroDossier : string) {
 
 
         // existing Patient 
@@ -29,31 +29,8 @@ export class PatientRepository extends Repository<Patient> {
                 ]
             })
 
-        if (existingPatient) {
-
-            // on retourne l'exception avec la cause et la description 
-            throw new HttpException({
-                message : "PATIENT ALREADY EXIST",
-                data : existingPatient
-            }, HttpStatus.BAD_REQUEST)
-        }
-
+        if (existingPatient) return null 
         
-        let patientId = ""
-        let isUnique = false 
-
-        while(!isUnique){
-
-            patientId = PatientIdGenerated(data.identity.prenom)
-
-            const existingPatientId = await this.findOne({
-                where : {uniquePatientId : patientId}
-            })
-
-            if(!existingPatientId){
-                isUnique = true 
-            }
-        }
 
         // create patient 
         const patient = this.create({
@@ -68,7 +45,7 @@ export class PatientRepository extends Repository<Patient> {
 
             numIdentityNational: data.uniqueIdentity.numIdentityNational,
             numSecuSocial: data.uniqueIdentity.numSecuSocial,
-            uniquePatientId : patientId,
+            uniquePatientId : numeroDossier,
 
             createdBy: data.CreatedBy.createdBy
         })

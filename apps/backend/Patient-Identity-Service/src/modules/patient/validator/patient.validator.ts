@@ -70,12 +70,22 @@ export const CreatePatientSchema = z.object({
 
 
 
-// Schema de validation des donnée entrant pour la validation
+
+// schema :  update patient
 export const UpdatePatientSchema = CreatePatientSchema.partial().omit({
     uniqueIdentity : true,
     CreatedBy : true
 })
 
+// schema : trouver un seul patient 
+export const FindOnlyPatientSchema = z.object({
+    patientId : z.uuid("Identifiant du paiient invalide"),
+    numeroDossier : z.string("le numero de dossier est invalide")
+}) 
+
+
+// schema : suprimer un patient
+export const deleteOnlyPatientSchema = FindOnlyPatientSchema
 
 //Schema de validation des donnée de recherche entrant 
 export const SearchPatientSchema = z.object({

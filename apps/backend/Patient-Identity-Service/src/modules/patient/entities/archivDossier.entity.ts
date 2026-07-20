@@ -28,16 +28,12 @@ export class ArchivDossier {
     // Référence vers le dossier patient auquel ce document est rattaché
     @Index()
     @Column({ type: "uuid", nullable: true })
-    dossierId?: string;
+    dossierId?: string; 
 
     // Type de document sous forme libre (ex: "Ordonnance", "Analyse"...)
-    @Column({ type: "text", nullable: true })
+    @Column({ type: "enum", enum : ["CNI", "PASSPORT", "ATTESTATION", "ACTE_NAISSANCE", "AUTRE"],nullable: true })
     typeDoc?: string;
 
-    // Référence vers le type de document (table type_doc)
-    @Index()
-    @Column({ type: "uuid", nullable: true })
-    typeDocId?: string;
 
     // Nom du fichier archivé
     @Column({ length: 145, type: "varchar", nullable: true })

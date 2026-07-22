@@ -6,19 +6,20 @@ import { PatientIdGenerated } from "../../../helpers/func/uniquePatientIdGenerat
 
 
 
+
 @Injectable()
 export class PatientRepository extends Repository<Patient> {
 
      
     //injecter la config qui permet de communiquer avec notre base donner 
     // et d y effectuer des methode 
-    constructor(private dataSource: DataSource) {
+    constructor(dataSource: DataSource) {
         super(Patient, dataSource.createEntityManager())
     }
 
 
     //creation d'un patient 
-    async createNewPatient(data: CreatePatientInput, numeroDossier : string) {
+    async createNewPatient(data: CreatePatientInput) {
 
 
         // existing Patient 
@@ -29,8 +30,34 @@ export class PatientRepository extends Repository<Patient> {
                 ]
             })
 
-        if (existingPatient) return null 
+        if (existingPatient) {
+            return {
+                exist : true,
+                existingPatient
+            }
+        } 
         
+        const MaxFind = 5
+        let numeroDossier = ""
+
+        for(let i = 1; i <= MaxFind; i++){
+            
+            numeroDossier = PatientIdGenerated(data.identity.nom)
+            const existing = this.findOne({
+                where : {
+                    uniquePatientId : numeroDossier
+                }
+            })
+            
+            if(!existing){
+                break;
+            }else{
+                return {
+                    existNumero: true,
+                    existingNumero : existing,
+                }
+            }
+        }
 
         // create patient 
         const patient = this.create({

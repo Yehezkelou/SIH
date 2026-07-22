@@ -27,9 +27,18 @@ export const CreateArchivDossierSchema = z.object({
         .date()
         .optional(),
 
+    url : z
+        .string()
+        .optional(),
+
     description : z
         .string()
         .max(500, "la description du fichier doit etre inferieur a 200 caractere")
         .optional(),
 
 })
+
+
+
+// type typescript 
+export type CreateArchivDossierInput = z.infer<typeof CreateArchivDossierSchema>

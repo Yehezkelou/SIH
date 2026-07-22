@@ -51,6 +51,10 @@ export class ArchivDossier {
     @Column({ type: "timestamp", nullable: true })
     date?: Date;
 
+    // url du dossier
+    @Column({ length: 145, type: "varchar", nullable: true })
+    url?: string;
+
     // Description libre du document archivé
     @Column({ length: 145, type: "varchar", nullable: true })
     description?: string;

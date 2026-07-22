@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "nx run-many -t serve",
     "dev:patient": "nx serve @org/Patient-Identity-Service",
-    "dev:admission" : "nx servce @org/Admission-service",
+    "dev:admission": "nx servce @org/Admission-service",
     "graph": "nx graph"
   },
   "private": true,
@@ -32,6 +32,7 @@
     "@types/express": "^5.0.6",
     "@types/express-session": "^1.19.0",
     "@types/jest": "~30.0.0",
+    "@types/multer": "^2.2.0",
     "@types/node": "20.19.9",
     "@vitest/coverage-v8": "~4.1.0",
     "eslint": "^9.8.0",
@@ -65,6 +66,7 @@
     "bcryptjs": "^3.0.3",
     "express": "^5.2.1",
     "express-session": "^1.19.0",
+    "multer": "^2.2.0",
     "nestjs-pino": "^4.6.1",
     "pino": "^10.3.1",
     "pino-pretty": "^13.1.3",

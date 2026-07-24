@@ -1,4 +1,4 @@
-import { DataSource, ILike, Raw, Repository } from "typeorm";
+import { DataSource, ILike, Repository } from "typeorm";
 import { Patient } from "../entities/patient.entity";
 import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
 import { CreatePatientInput, SearchPatientInput, UpdatePatientInput } from "../validator";
@@ -62,16 +62,35 @@ export class PatientRepository extends Repository<Patient> {
         // create patient 
         const patient = this.create({
 
+
+            // identité propre
             nom: data.identity.nom,
             prenom: data.identity.prenom,
             age: data.identity.age,
             genre: data.identity.genre,
+            dateNaissance : data.identity.dateNaissance.toDateString(),
+            lieuNaissance : data.identity.lieuNaissance,
 
+            //famille 
+            nomPere : data.famille.nomPere,
+            nomMere : data.famille.nomPere,
+            tuteur : data.famille.tuteur,
+            numeroPere : data.famille.numeroPere,
+            numeroMere : data.famille.numeroMere,
+            numeroTuteur : data.famille.numeroTuteur,
+
+            // donnée de contact
             email: data.contact.email,
             numero: data.contact.numero,
+            contactUrgence : data.contact.conctactUrgence,
+            numeroSecondaire : data.contact.numeroSecondaire,
+            
 
+            // unique identité
             numIdentityNational: data.uniqueIdentity.numIdentityNational,
             numSecuSocial: data.uniqueIdentity.numSecuSocial,
+            numeroPassport : data.uniqueIdentity.numeroPassport,
+            numCMU : data.uniqueIdentity.numeroCMU,
             uniquePatientId : numeroDossier,
 
             createdBy: data.CreatedBy.createdBy
@@ -90,7 +109,7 @@ export class PatientRepository extends Repository<Patient> {
             where: { id: Id, uniquePatientId : patientId}
         })
 
-        if (!existing) throw new HttpException("PATIENT NOT FOUND", HttpStatus.NOT_FOUND)
+        if (!existing) 
 
 
         // merge faire la comparaison entre les ancienne donné et les nouvelle

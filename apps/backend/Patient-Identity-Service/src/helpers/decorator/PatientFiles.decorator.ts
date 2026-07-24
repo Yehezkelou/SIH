@@ -5,13 +5,13 @@ import { MulterConfiPatientFile } from "../config/multer.config"
 
 
 export const UsePatientFiles = (fields : string = "dossiers") => {
-    applyDecorators(
+    return applyDecorators(
         UseInterceptors(FilesInterceptor(fields, 10, MulterConfiPatientFile))
     )
 }
 
 export const UsePatientFile = (field : string = "dossier") =>{
-    applyDecorators(
+    return applyDecorators(
         UseInterceptors(FileInterceptor(field, MulterConfiPatientFile))
     )
 }

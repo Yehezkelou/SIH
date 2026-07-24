@@ -1,4 +1,4 @@
-import { Column, CreateDateColumn, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm"
+import { Column, CreateDateColumn, DeleteDateColumn, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm"
 import { Patient } from "./patient.entity";
 
 
@@ -65,4 +65,20 @@ export class ArchivDossier {
 
     @UpdateDateColumn()
     updatedAt!: Date;
+
+    // date de suppression
+    @DeleteDateColumn()
+    deleteAt? : Date
+
+    // identifiant de la personne qui a crée
+    @Column({type : "uuid", nullable : true})
+    createdBy? : string
+
+    // identifiant de la personne qui a modifié
+    @Column({type : "uuid", nullable : true})
+    updatedBy? : string
+
+    // identifiant de la personne qui a supprimé
+    @Column({type : "uuid", nullable : true})
+    deletedBy? : string
 }

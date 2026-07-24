@@ -30,6 +30,52 @@ export const CreatePatientSchema = z.object({
         genre : z
             .enum(["M", "F"])
             .default("M"),
+
+        dateNaissance : z.date(),
+
+        lieuNaissance : z.string().optional(),
+    }),
+
+    // famille 
+    famille : z.object({
+
+        nomPere : z.string().optional(),
+        numeroPere : z
+            .string()
+            .max(10, "le numero doit faire 10 chiffre")
+            .refine((num) => {
+                const prefixe = ["01", "05", "07"]
+                return prefixe.some((pre) => num.startsWith(pre))
+            },{
+                message : "le numero doit contenir le prefixe de l'operateur (ex: 01, 05, 07....)"
+            })
+            .optional(),
+
+        nomMere : z.string().optional(),
+
+        numeroMere : z
+            .string()
+            .max(10, "le numero doit faire 10 chiffre")
+            .refine((num) => {
+                const prefixe = ["01", "05", "07"]
+                return prefixe.some((pre) => num.startsWith(pre))
+            },{
+                message : "le numero doit contenir le prefixe de l'operateur (ex: 01, 05, 07....)"
+            })
+            .optional(),
+
+        tuteur : z.string().optional(),
+
+        numeroTuteur : z
+            .string()
+            .max(10, "le numero doit faire 10 chiffre")
+            .refine((num) => {
+                const prefixe = ["01", "05", "07"]
+                return prefixe.some((pre) => num.startsWith(pre))
+            },{
+                message : "le numero doit contenir le prefixe de l'operateur (ex: 01, 05, 07....)"
+            })
+            .optional(),
     }),
 
     // validation concernant les données liées aux contacts
@@ -47,8 +93,32 @@ export const CreatePatientSchema = z.object({
             },{
                 message : "le numero doit contenir le prefixe de l'operateur (ex: 01, 05, 07....)"
             })
-            .optional()
+            .optional(),
+
+        numeroSecondaire : z
+            .string()
+            .max(10, "le numero doit faire 10 chiffre")
+            .refine((num) => {
+                const prefixe = ["01", "05", "07"]
+                return prefixe.some((pre) => num.startsWith(pre))
+            },{
+                message : "le numero doit contenir le prefixe de l'operateur (ex: 01, 05, 07....)"
+            })
+            .optional(),
+        
+        conctactUrgence : z
+            .string()
+            .max(10, "le numero doit faire 10 chiffre")
+            .refine((num) => {
+                const prefixe = ["01", "05", "07"]
+                return prefixe.some((pre) => num.startsWith(pre))
+            },{
+                message : "le numero doit contenir le prefixe de l'operateur (ex: 01, 05, 07....)"
+            })
+            .optional(),
+        
     }),
+
 
     // validation concernant les données liées a l'identité civil unique
     uniqueIdentity : z.object({
@@ -58,8 +128,15 @@ export const CreatePatientSchema = z.object({
 
         numIdentityNational : z 
             .string()
-            .optional()
+            .optional(),
+
+        numeroPassport : z
+            .string()
+            .optional(),
         
+        numeroCMU : z
+            .string()
+            .optional(),
     }),
 
     // validation concernant les donnée liées a l'identifiant du createur
@@ -69,13 +146,19 @@ export const CreatePatientSchema = z.object({
 })
 
 
-
-
 // schema :  update patient
-export const UpdatePatientSchema = CreatePatientSchema.partial().omit({
-    uniqueIdentity : true,
+export const UpdatePatientSchema = CreatePatientSchema.extend({
+    patientId : z.uuid("Indifiant du patient invalide"),
+    updatedBy : z.uuid("Identifiant de la personne qui a modifié est invalide")
+}).omit({
     CreatedBy : true
+}).partial({
+    identity : true,
+    contact : true,
+    uniqueIdentity : true, 
+    famille : true
 })
+
 
 // schema : trouver un seul patient 
 export const FindOnlyPatientSchema = z.object({
@@ -85,7 +168,10 @@ export const FindOnlyPatientSchema = z.object({
 
 
 // schema : suprimer un patient
-export const deleteOnlyPatientSchema = FindOnlyPatientSchema
+export const softDeleteOnlyPatientSchema = FindOnlyPatientSchema.extend({
+    deletedBy : z.uuid("Identifiant de la personne qui a supprimé est invalide") 
+})
+
 
 //Schema de validation des donnée de recherche entrant 
 export const SearchPatientSchema = z.object({

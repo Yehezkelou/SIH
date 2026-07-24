@@ -1,4 +1,4 @@
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Column, CreateDateColumn, DeleteDateColumn, Entity, PrimaryGeneratedColumn } from "typeorm";
 
 
 /**
@@ -42,4 +42,7 @@ export class ArchivDossierHistory {
     @Column("uuid", { nullable: true })
     changeBy?: string
 
+    // date de supression
+    @DeleteDateColumn()
+    deleteAt? : Date
 }

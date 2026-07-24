@@ -1,8 +1,9 @@
 import {HttpException, HttpStatus, Injectable } from "@nestjs/common";
 import { PatientRepository } from "../repositories/patient.repository";
-import { CreateArchivDossierInput, CreatePatientInput } from "../validator";
+import { CreateArchivDossierInput, CreatePatientInput, EXTENSION, UpdatePatientInput } from "../validator";
 import { ArchivDossierRepository } from "../repositories/archivDossier.repository";
 import path from "path";
+import { Patient } from "../entities/patient.entity";
 
 
 
@@ -33,25 +34,41 @@ export class PatientService {
             throw new HttpException({
                 message : "NUMERO DE DOSSIER ALREADY EXIST",
                 metadata : patientCreated.existingNumero
-            }, HttpStatus.CONFLICT)
+            }, HttpStatus.CONFLICT) 
         }
 
-        // gestion des file 
-        for(const file of files){
-
-            const path_file = file.path;
+        const newPatient = patientCreated as Patient
+        const dossierToCreate: CreateArchivDossierInput[] = [] 
 
 
+        // gestion des fichiers 
+        if(files && files.length > 0){
+            for(const file of files){
 
+                const ext = path.extname(file.originalname).replace(".", "").toUpperCase() as EXTENSION
 
+                dossierToCreate.push({
+                    patientId : newPatient.id,
+                    typeDoc : dossier.typeDoc || "AUTRE",
+                    name : dossier.name,
+                    extension : ["PNG", "PDF", "JPG", "JPEG"].includes(ext) ? ext : undefined,
+                    url : file.path,
+                    date : new Date().toISOString(),
+                    description : dossier.description || `Fichier joint : ${file.originalname}`,
+                    createdBy : dossier.createdBy
+                });
+            }
 
+            await this.archivDossierRepository.createArchivDossier(dossierToCreate)
         }
 
-        
+        return newPatient      
     }
 
     // update only Patient 
-    async updartePatient(){}
+    async updartePatient(data : UpdatePatientInput){
+        
+    }
 
     // find one patient 
     async findOnePatient(){}

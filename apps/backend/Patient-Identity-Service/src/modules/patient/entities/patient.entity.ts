@@ -62,16 +62,29 @@ export class Patient {
 
     // ===== filiation =====
     // Utile pour identifier un patient mineur ou distinguer deux homonymes
-
+    @Index()
     @Column({ length: 255, type: "varchar", nullable: true })
     nomPere?: string;
 
+    @Index()
     @Column({ length: 255, type: "varchar", nullable: true })
     nomMere?: string;
 
+    @Index()
     @Column({type: "varchar", length : 255, nullable : true})
     tuteur?: string
 
+    @Index()
+    @Column({length : 255, type : "varchar", nullable : true})
+    numeroPere? : string
+
+    @Index()
+    @Column({length : 255, type : "varchar", nullable : true})
+    numeroMere? : string
+
+    @Index()
+    @Column({length : 255, type : "varchar", nullable : true})
+    numeroTuteur? : string
 
     // ===== donné de contact =====
     @Index()
@@ -93,12 +106,20 @@ export class Patient {
 
     // identifiant unique
     @Index()
-    @Column({ length: 255, type: "varchar", unique: true })
-    numSecuSocial!: string
+    @Column({ length: 255, type: "varchar", unique: true , nullable : true})
+    numSecuSocial?: string
 
     @Index()
-    @Column({ length: 255, type: "varchar", unique: true })
-    numIdentityNational!: string
+    @Column({ length: 255, type: "varchar", unique: true , nullable : true})
+    numIdentityNational?: string
+
+    @Index()
+    @Column({ length: 255, type: "varchar", unique: true , nullable : true})
+    numeroPassport?: string
+
+    @Index()
+    @Column({ length: 255, type: "varchar", unique: true , nullable : true})
+    numCMU?: string
 
     // metadonnée systeme
     @CreateDateColumn()

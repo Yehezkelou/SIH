@@ -149,6 +149,7 @@ export const CreatePatientSchema = z.object({
 // schema :  update patient
 export const UpdatePatientSchema = CreatePatientSchema.extend({
     patientId : z.uuid("Indifiant du patient invalide"),
+    numeroDossier : z.string("le numero du patient est invalide"),
     updatedBy : z.uuid("Identifiant de la personne qui a modifié est invalide")
 }).omit({
     CreatedBy : true
@@ -183,6 +184,16 @@ export const SearchPatientSchema = z.object({
     prenom : z.string().trim().min(2, "Trop court").max(50, "trop long").optional(),
     age : z.coerce.number().int().optional(),
     genre : z.enum(["M", "F"]).optional(),
+    dateNaissance : z.date().optional(),
+
+    
+    // famille
+    nomPere : z.string().optional(),
+    nomMere : z.string().optional(),
+    tuteur : z.string().optional(),
+    numeroPere : z.string().optional(),
+    numeroMere : z.string().optional(),
+    numeroTuteur : z.string().optional(),
 
     // contact
     email : z.email().optional(),
@@ -191,6 +202,8 @@ export const SearchPatientSchema = z.object({
     //unique identity
     numSecuSocial : z.string().optional(),
     numIdentityNational : z.string().optional(),
+    numeroPassport : z.string().optional(),
+    numCMU : z.string().optional(),
     uniquePatientId : z.string().optional(),
   
 
@@ -207,5 +220,5 @@ export const SearchPatientSchema = z.object({
 export type CreatePatientInput = z.infer<typeof CreatePatientSchema>
 export type UpdatePatientInput = z.infer<typeof UpdatePatientSchema>
 export type SearchPatientInput = z.infer<typeof SearchPatientSchema>
-
-
+export type FindOnePatientInput = z.infer<typeof FindOnlyPatientSchema>
+export type SoftDeleteOnePatientInput = z.infer<typeof softDeleteOnlyPatientSchema>

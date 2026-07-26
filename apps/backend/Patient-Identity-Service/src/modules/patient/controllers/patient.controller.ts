@@ -1,37 +1,37 @@
-import { Body, Controller, Get, HttpException, HttpStatus, Param, Post, Put, Query, Res } from "@nestjs/common";
+import { Body, Controller, Delete, Get, HttpStatus, Post, Put, Query, Res } from "@nestjs/common";
 import { PinoLogger } from "nestjs-pino";
-import { CreatePatientDto, SearchPatientDto, UpdatePatientDto } from "../dto/patient.dto";
-import { PatientRepository } from "../repositories/patient.repository";
+import { CreatePatientDto, SearchPatientDto, UpdatePatientDto, FindOnePatientDto, SoftDeletePatientDto } from "../dto/patient.dto";
 import type {Response} from "express" 
+import { Patient } from "../entities/patient.entity";
+import { PatientService } from "../services/patient.service";
+import { CreateArchivDossierDto } from "../dto/archivDossier.dto";
+import { UsePatientFiles } from "../../../helpers/decorator/PatientFiles.decorator";
 
 
  
-
-
-
-
-
-
-
 @Controller('patient')
 export class patientController{
     constructor(
-        private readonly service : PatientRepository,
+        private readonly service : PatientService,
         private readonly logger : PinoLogger
     ){}
 
 
+
     @Post("create")
-    async createPatient(@Body() patient : CreatePatientDto, @Res() res : Response){
+    @UsePatientFiles("dossiers")
+    async createPatient(@Body() data : {patient : CreatePatientDto, dossier : CreateArchivDossierDto}, files : Express.Multer.File[], @Res() res : Response){
       
-        const result = await this.service.createNewPatient(patient)
+        const result = await this.service.createPatient(data, files)
 
-        if(!result){
-            throw  new HttpException("erreur de creation du patient", HttpStatus.BAD_REQUEST)
-        }
 
-        this.logger.info("Creation du patient", {nom : result.numIdentityNational , prenom : result.nom})
-
+        this.logger.info({
+            message : "Creation du patient",
+            data : {
+                nom : (result as Patient).nom,
+                prenom : (result as Patient).prenom
+            }
+        })
         // response 
         res.status(HttpStatus.CREATED).json({
             message : "SUCCEFULL",
@@ -40,17 +40,17 @@ export class patientController{
         })
     }
 
-    @Put(":id/:patientId/update")
-    async updatePatient(@Param('id') id: string, @Param('patientId') patientId: string,   @Body() patient : UpdatePatientDto, @Res() res : Response){
+    @Put("²update")
+    async updatePatient(@Body() patient : UpdatePatientDto, @Res() res : Response){
 
-        const result = await this.service.updatePatient(patient, id, patientId)
+        const result = await this.service.updatePatient(patient)
 
-        if(!result){
-            this.logger.error("ERROR UPDATE PATIENT")
-            throw new HttpException("ERROR UPDATED PATIENT", HttpStatus.BAD_REQUEST)
-        }
 
-        this.logger.info("PATIENT UPDATED", {...result})
+        this.logger.info({
+            message : "update success",
+            data : result
+        })
+
         //
         res.status(HttpStatus.CREATED).json({
             message : "SUCCEFULL",
@@ -63,14 +63,12 @@ export class patientController{
     @Get("search")
     async searchPatient(@Query() query : SearchPatientDto, @Res() res : Response){
 
-        const result = await this.service.findPatient(query)
+        const result = await this.service.findPatientOrPatients(query)
 
-        if(!result){
-            this.logger.error("ERROR NO PATIENT FOUND", query)
-            throw new HttpException("NO PATIENT FOUND", HttpStatus.NOT_FOUND)
-
-        }
-
+        this.logger.info({
+            message : "patient found",
+            data : result
+        })
        
         res.status(HttpStatus.OK).json({
             message : "SUCCEFULL",
@@ -80,16 +78,50 @@ export class patientController{
     }
 
     @Get()
-    async getAllPatient(@Res() res : Response){
+    async getAllPatient(@Body() data : {page : number, limit : number}, @Res() res : Response){
         
-        const result = await this.service.findAllPatient()
+        const result = await this.service.findAllPatient(data.page, data.limit)
 
-        if(!result){
-            this.logger.error("ERROR NO PATIENT FOUND")
-            throw new HttpException("NO PATIENT FOUND", HttpStatus.NOT_FOUND)
-        }
 
-        this.logger.info("GET ALL PATIENT", result)
+        this.logger.info({
+            message : "get all patient",
+            data : result
+        })
+
+        res.status(HttpStatus.OK).json({
+            message : "SUCCEFULL",
+            data : result,
+            timestamp : new Date().toISOString()
+        })
+    }
+
+    @Get()
+    async getOnlyPatient(@Body() data : FindOnePatientDto, @Res() res : Response){
+        
+        const result = await this.service.findOnePatient(data)
+
+        this.logger.info({
+            message : "get only patient",
+            data : result
+        })
+
+        res.status(HttpStatus.OK).json({
+            message : "SUCCEFULL",
+            data : result,
+            timestamp : new Date().toISOString()
+        })
+    }
+
+    @Delete()
+    async deletePatient(@Body() data : SoftDeletePatientDto, @Res() res : Response){
+        
+        const result = await this.service.softDeletePatient(data)
+
+        this.logger.info({
+            message : "delete patient",
+            data : result
+        })
+
         res.status(HttpStatus.OK).json({
             message : "SUCCEFULL",
             data : result,

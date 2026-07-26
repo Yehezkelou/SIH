@@ -148,7 +148,5 @@ export class ArchivDossierService {
         return dossier
     }
 
-    
-
    
 }

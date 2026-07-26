@@ -1,7 +1,7 @@
 import { DataSource, ILike, Repository } from "typeorm";
 import { Patient } from "../entities/patient.entity";
-import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
-import { CreatePatientInput, SearchPatientInput, UpdatePatientInput } from "../validator";
+import { Injectable } from "@nestjs/common";
+import { CreatePatientInput, FindOnePatientInput, SearchPatientInput, SoftDeleteOnePatientInput, UpdatePatientInput } from "../validator";
 import { PatientIdGenerated } from "../../../helpers/func/uniquePatientIdGenerated";
 
 
@@ -26,7 +26,9 @@ export class PatientRepository extends Repository<Patient> {
             const existingPatient  = await this.findOne({
                 where : [
                     {numIdentityNational : data.uniqueIdentity.numIdentityNational},
-                    {numSecuSocial : data.uniqueIdentity.numSecuSocial}
+                    {numSecuSocial : data.uniqueIdentity.numSecuSocial},
+                    {numCMU : data.uniqueIdentity.numeroCMU},
+                    {numeroPassport : data.uniqueIdentity.numeroPassport}
                 ]
             })
 
@@ -102,24 +104,47 @@ export class PatientRepository extends Repository<Patient> {
 
 
     // update patient 
-    async updatePatient(data: UpdatePatientInput, Id: string, patientId : string) {
+    async updatePatient(data: UpdatePatientInput) {
 
         // rechercher le patient concerné
         const existing = await this.findOne({
-            where: { id: Id, uniquePatientId : patientId}
+            where: { id: data.patientId, uniquePatientId : data.numeroDossier}
         })
 
-        if (!existing) 
+        if (!existing) return null
 
+        existing.updatedBy = data.updatedBy
 
         // merge faire la comparaison entre les ancienne donné et les nouvelle
         const patient = this.merge(existing, {
+
+            // identité propre
             nom: data.identity?.nom,
             prenom: data.identity?.prenom,
             age: data.identity?.age,
             genre: data.identity?.genre,
+            dateNaissance : data.identity?.dateNaissance?.toDateString(),
+            lieuNaissance : data.identity?.lieuNaissance,
 
-            numero: data.contact?.numero
+            // famille
+            nomPere : data.famille?.nomPere,
+            nomMere : data.famille?.nomMere,
+            tuteur : data.famille?.tuteur,
+            numeroPere : data.famille?.numeroPere,
+            numeroMere : data.famille?.numeroMere,
+            numeroTuteur : data.famille?.numeroTuteur,
+
+            // contact
+            email: data.contact?.email,
+            numero: data.contact?.numero,
+            contactUrgence : data.contact?.conctactUrgence,
+            numeroSecondaire : data.contact?.numeroSecondaire,
+
+            // unique identité
+            numIdentityNational: data.uniqueIdentity?.numIdentityNational,
+            numSecuSocial: data.uniqueIdentity?.numSecuSocial,
+            numeroPassport : data.uniqueIdentity?.numeroPassport,
+            numCMU : data.uniqueIdentity?.numeroCMU,
         })
 
         return await this.save(patient)
@@ -132,20 +157,28 @@ export class PatientRepository extends Repository<Patient> {
 
 
         // recherche precise par champ unique
-        if(query.numIdentityNational || query.numSecuSocial ||query.uniquePatientId){
+        if(query.numIdentityNational 
+            || query.numSecuSocial 
+            ||query.uniquePatientId
+            || query.numCMU
+            || query.numeroPassport
+        ){
 
             const conditionsUnique = []
 
             if(query.numIdentityNational) conditionsUnique.push({numIdentityNational : query.numIdentityNational})
             if(query.numSecuSocial) conditionsUnique.push({numSecuSocial : query.numSecuSocial})
             if(query.uniquePatientId) conditionsUnique.push({uniquePatientId : query.uniquePatientId})
+            if(query.numCMU) conditionsUnique.push({numCMU : query.numCMU})
+            if(query.numeroPassport) conditionsUnique.push({numeroPassport : query.numeroPassport})
+
 
 
             const existing = await this.findOne({
                 where : conditionsUnique
             })
 
-            if(!existing) throw new HttpException("PATIENT NOT FOUND", HttpStatus.NOT_FOUND)
+            if(!existing) return null
 
             return {
                 total : 1,
@@ -185,9 +218,7 @@ export class PatientRepository extends Repository<Patient> {
 
         })
 
-        if(total === 0){
-            throw new HttpException("PATIENT NOT FOUND", HttpStatus.NOT_FOUND)
-        }
+        if(total === 0) return null
 
         return {
             total, 
@@ -199,7 +230,7 @@ export class PatientRepository extends Repository<Patient> {
 
 
     // trouver tout les patient
-    async findAllPatient(){
+    async findAllPatient(page : number, limit : number){
 
         const [patients, total] = await this.findAndCount({
             order : {
@@ -208,17 +239,53 @@ export class PatientRepository extends Repository<Patient> {
                 prenom : "ASC"
             },
 
-            take : 20,
-            skip : 0
+            take : limit,
+            skip : (page - 1) * limit
 
         })
 
-        if(total === 0){
-            throw new HttpException("PATIENT NOT FOUND", HttpStatus.NOT_FOUND)
-        }
+        if(total === 0) return null
 
-        return {total, patients}
+        return {
+            total,
+            patients
+        }
     }
+
+
+    // trouver un seul patient 
+    async findOnePatient(data : FindOnePatientInput){
+
+        const existing = await this.findOne({
+            where : {
+                uniquePatientId : data.numeroDossier,
+                id : data.patientId
+            }
+        })
+
+        if(!existing) return null
+
+        return existing
+    }
+
+    // supression en douce du patient 
+    async softDeletePatient(data : SoftDeleteOnePatientInput){
+        const existing = await this.findOne({
+
+            where : {
+                id : data.patientId,
+                uniquePatientId : data.numeroDossier,
+                deletedAt : undefined
+            }
+        })
+
+        if(!existing) return null
+
+        existing.deletedBy = data.deletedBy
+
+        return this.softDelete(existing)
+    }
+
 }
 
 

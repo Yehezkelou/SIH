@@ -1,9 +1,10 @@
 import {HttpException, HttpStatus, Injectable } from "@nestjs/common";
 import { PatientRepository } from "../repositories/patient.repository";
-import { CreateArchivDossierInput, CreatePatientInput, EXTENSION, UpdatePatientInput } from "../validator";
+import { CreateArchivDossierInput, CreatePatientInput, EXTENSION, FindOnePatientInput, SearchPatientInput, SoftDeleteOnePatientInput, UpdatePatientInput } from "../validator";
 import { ArchivDossierRepository } from "../repositories/archivDossier.repository";
 import path from "path";
 import { Patient } from "../entities/patient.entity";
+import { MESSAGE_ERROR } from "../../../helpers/messageError";
 
 
 
@@ -27,12 +28,16 @@ export class PatientService {
 
         if("exist" in patientCreated){
             throw new HttpException({
-                message : "PATIENT ALREADY EXIST",
+                statusCode : HttpStatus.CONFLICT,
+                code : MESSAGE_ERROR.PATIENT_ALREADY_EXIST.CODE,
+                message : MESSAGE_ERROR.PATIENT_ALREADY_EXIST.MESSAGE,
                 metadata : patientCreated.existingPatient
             }, HttpStatus.CONFLICT)
         }else if ("existNumero" in patientCreated){
             throw new HttpException({
-                message : "NUMERO DE DOSSIER ALREADY EXIST",
+                statusCode : HttpStatus.CONFLICT,
+                code : MESSAGE_ERROR.NUMERO_DE_DOSSIER_ALREADY_EXIST.CODE,
+                message : MESSAGE_ERROR.NUMERO_DE_DOSSIER_ALREADY_EXIST.MESSAGE,
                 metadata : patientCreated.existingNumero
             }, HttpStatus.CONFLICT) 
         }
@@ -66,18 +71,79 @@ export class PatientService {
     }
 
     // update only Patient 
-    async updartePatient(data : UpdatePatientInput){
-        
+    async updatePatient(data : UpdatePatientInput){
+     
+        const patient = await this.patientRepository.updatePatient(data)
+
+        if(patient == null) throw new HttpException(
+            {
+                statusCode : HttpStatus.NOT_FOUND,
+                code : MESSAGE_ERROR.PATIENT_NOT_FOUND.CODE,
+                message : MESSAGE_ERROR.PATIENT_NOT_FOUND.MESSAGE
+            },HttpStatus.NOT_FOUND)
+
+        return patient
+    }
+
+    // find patient or patients with different query
+    async findPatientOrPatients(data : SearchPatientInput){
+
+        const patients = await this.patientRepository.findPatient(data)
+
+        if(patients == null){
+            throw new HttpException({
+                statusCode : HttpStatus.NOT_FOUND,
+                code : MESSAGE_ERROR.PATIENT_NOT_FOUND.CODE,
+                message : MESSAGE_ERROR.PATIENT_NOT_FOUND.MESSAGE
+            },HttpStatus.NOT_FOUND)
+        }
+
+        return patients
+    }
+
+     // find all patient 
+    async findAllPatient(page : number, limit : number){
+        const patients = await this.patientRepository.findAllPatient(page, limit)
+
+        if(patients == null){
+            throw new HttpException({
+                statusCode : HttpStatus.NOT_FOUND,
+                code : MESSAGE_ERROR.PATIENT_NOT_FOUND.CODE,
+                message : MESSAGE_ERROR.PATIENT_NOT_FOUND.MESSAGE
+            },HttpStatus.NOT_FOUND)
+        }
+
+        return patients
     }
 
     // find one patient 
-    async findOnePatient(){}
+    async findOnePatient(data : FindOnePatientInput){
+        const patient = await this.patientRepository.findOnePatient(data)
 
-    // find all patient 
-    async findAllPatient(){}
+        if(patient == null){
+            throw new HttpException({
+                statusCode : HttpStatus.NOT_FOUND,
+                code : MESSAGE_ERROR.PATIENT_NOT_FOUND.CODE,
+                message : MESSAGE_ERROR.PATIENT_NOT_FOUND.MESSAGE
+            },HttpStatus.NOT_FOUND)
+        }
+        return patient
+    }
+
 
     // soft delete
-    async deletePatient(){}
+    async softDeletePatient(data : SoftDeleteOnePatientInput){
+        const patient = this.patientRepository.softDeletePatient(data)
+
+        if(patient == null){
+            throw new HttpException({
+                statusCode : HttpStatus.NOT_FOUND,
+                code : MESSAGE_ERROR.PATIENT_NOT_FOUND.CODE,
+                message : MESSAGE_ERROR.PATIENT_NOT_FOUND.MESSAGE
+            },HttpStatus.NOT_FOUND)
+        }
+        return patient
+    }
 
     // fusion patient
     async fusionPatient(){}

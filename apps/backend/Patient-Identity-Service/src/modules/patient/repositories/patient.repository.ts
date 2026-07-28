@@ -1,7 +1,7 @@
 import { DataSource, ILike, Repository } from "typeorm";
 import { Patient } from "../entities/patient.entity";
 import { Injectable } from "@nestjs/common";
-import { CreatePatientInput, FindOnePatientInput, SearchPatientInput, SoftDeleteOnePatientInput, UpdatePatientInput } from "../validator";
+import { CreatePatientInput, CreatePatientProvisoirInput, FindOnePatientInput, RegularizationPatientInput, SearchPatientInput, SoftDeleteOnePatientInput, UpdatePatientInput } from "../validator";
 import { PatientIdGenerated } from "../../../helpers/func/uniquePatientIdGenerated";
 
 
@@ -95,6 +95,7 @@ export class PatientRepository extends Repository<Patient> {
             numCMU : data.uniqueIdentity.numeroCMU,
             uniquePatientId : numeroDossier,
 
+
             createdBy: data.CreatedBy.createdBy
         })
 
@@ -102,6 +103,151 @@ export class PatientRepository extends Repository<Patient> {
 
     }
 
+    // create patient provisoire
+    async createPatientProvisoir(data : CreatePatientProvisoirInput){
+
+
+        const MAX_FIND = 5
+        let numeroDossier = ""
+
+        for(let i = 0; i< MAX_FIND; i++){
+            const numeroDossier = PatientIdGenerated(data.identity.nom, true);
+
+            const patient = await this.findOne({
+                where : {
+                    uniquePatientId : numeroDossier
+                }
+            })
+
+            if(!patient){
+                break;
+            }else{
+                return {
+                    existNumero:true,
+                    existingNumero : patient
+                }
+            }
+
+        }
+
+        const patient = await this.create({
+            
+            // status 
+            statusDossier : "PROVISOIRE",
+
+            // identité 
+            nom : data.identity.nom,
+            prenom : data.identity.prenom,
+            genre : data.identity.genre,
+            age : data.identity.age,
+
+            // urgence 
+            motifDossierProvisoire : data.urgence.motifProvisoir,
+            serviceCreation : data.urgence.serviceCreation,
+            signalement : data.urgence.signalement,
+
+            // contact
+            email : data.contact?.email,
+            numero : data.contact?.numero,
+            contactUrgence : data.contact?.contactUrgence,
+            
+            // numero dossier 
+            uniquePatientId : numeroDossier,
+
+
+            // delay du dossier patient 
+            dateLimiteRegulation : new Date().getHours() + parseInt(process.env.PROVISIONAL_DOSSIER_DELAY_HOURS || "48"),
+            
+            // auteur
+            createdBy : data.createdBy,
+ 
+        })
+
+        return await this.save(patient);
+    }
+
+    // regulariser patient provisoir
+    async regularisationPatient(data : RegularizationPatientInput){
+
+        const dossierProvisoir = await this.findOne({
+            where : {
+                id : data.patientId,
+                uniquePatientId : data.numeroDossier,
+            }
+        })
+
+        if(!dossierProvisoir){
+            return {
+                provisoirExist : false,
+            }
+        }else if(dossierProvisoir.statusDossier === "DEFINITIF"){
+            return {
+                status : true,
+                dossierProvisoir
+            }
+        }
+
+
+        const existingPatient = await this.findOne({
+            where :[ 
+                {numIdentityNational : data.uniqueIdentity.numIdentityNational || ""},
+                {numSecuSocial : data.uniqueIdentity.numSecuSocial || ""},
+                {numeroPassport : data.uniqueIdentity.numeroPassport || ""},
+                {numCMU : data.uniqueIdentity.numeroCMU || ""},
+            ]
+        })
+        
+
+        if(existingPatient){
+            return {
+                exist : true,
+                existingPatient
+            }
+        }
+
+        //merge 
+        
+        const patient = this.merge(dossierProvisoir, {
+            // status 
+            statusDossier : "DEFINITIF",
+
+            // identié
+            nom : data.identity.nom,
+            prenom : data.identity.prenom,
+            age : data.identity.age,
+            genre : data.identity.genre,
+            dateNaissance : data.identity.dateNaissance.toDateString(),
+            lieuNaissance : data.identity.lieuNaissance,
+
+            // famille
+            nomPere : data.famille?.nomPere,
+            nomMere : data.famille?.nomMere,
+            tuteur : data.famille?.tuteur,
+            numeroPere : data.famille?.numeroPere,
+            numeroMere : data.famille?.numeroMere,
+            numeroTuteur : data.famille?.numeroTuteur,
+
+            // contact
+            email : data.contact?.email,
+            numero : data.contact?.numero,
+            contactUrgence : data.contact.conctactUrgence,
+            numeroSecondaire : data.contact.numeroSecondaire,
+
+            // unique identité
+            numIdentityNational : data.uniqueIdentity.numIdentityNational,
+            numSecuSocial : data.uniqueIdentity.numSecuSocial,
+            numeroPassport : data.uniqueIdentity.numeroPassport,
+            numCMU : data.uniqueIdentity.numeroCMU,
+
+            //info d'audit 
+            regularisBy : data.updatedBy,
+            regularisAt : new Date(),
+
+        });
+
+
+        return await this.save(patient)
+    }
 
     // update patient 
     async updatePatient(data: UpdatePatientInput) {
@@ -112,8 +258,6 @@ export class PatientRepository extends Repository<Patient> {
         })
 
         if (!existing) return null
-
-        existing.updatedBy = data.updatedBy
 
         // merge faire la comparaison entre les ancienne donné et les nouvelle
         const patient = this.merge(existing, {
@@ -145,12 +289,16 @@ export class PatientRepository extends Repository<Patient> {
             numSecuSocial: data.uniqueIdentity?.numSecuSocial,
             numeroPassport : data.uniqueIdentity?.numeroPassport,
             numCMU : data.uniqueIdentity?.numeroCMU,
+
+            // updatedBy
+            updatedBy : data.updatedBy,
         })
 
         return await this.save(patient)
     }
 
 
+    
 
     // trouver des patient selon un critere
     async findPatient(query: SearchPatientInput) {

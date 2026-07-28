@@ -3,7 +3,7 @@ import { ArchivDossierRepository } from "../repositories/archivDossier.repositor
 import { DeleteDossierInput, EXTENSION, FindAllDossierInput, FindOnlyDossierInput, ReplaceDossierInput } from "../validator";
 import * as fs from "fs"
 import path from "path";
-
+import { MESSAGE_ERROR_ARCHIDOC } from "../../../helpers/messageError";
 
 
 
@@ -25,8 +25,8 @@ export class ArchivDossierService {
         if(!existing){
              throw new HttpException({
                 statusCode : HttpStatus.NOT_FOUND,
-                code : "DOSSIER_NOT_FOUND",
-                message : "le document archivé demandé est introuvable ou n'apartient pas a ce patient."
+                code : MESSAGE_ERROR_ARCHIDOC.DOSSIER_NOT_FOUND.CODE,
+                message : MESSAGE_ERROR_ARCHIDOC.DOSSIER_NOT_FOUND.MESSAGE
              }, HttpStatus.NOT_FOUND)
         }
         
@@ -48,8 +48,8 @@ export class ArchivDossierService {
         if(!replace){
             throw new HttpException({
                 statusCode : HttpStatus.INTERNAL_SERVER_ERROR,
-                code : "DOCUMENT_FOR_REPLACEMENT_ERROR",
-                message : "le document dont le remplacement doit etre fait est introuvable."
+                code : MESSAGE_ERROR_ARCHIDOC.DOCUMENT_FOR_REPLACEMENT_ERROR.CODE,
+                message : MESSAGE_ERROR_ARCHIDOC.DOCUMENT_FOR_REPLACEMENT_ERROR.MESSAGE
             }, HttpStatus.INTERNAL_SERVER_ERROR)
         }
 
@@ -71,8 +71,8 @@ export class ArchivDossierService {
             }catch(error){
                 throw new HttpException({
                     statusCode : HttpStatus.INTERNAL_SERVER_ERROR,
-                    code : "MOVE_ERROR",
-                    message : "impossible de déplacer le fichier.",
+                    code : MESSAGE_ERROR_ARCHIDOC.MOVE_ERROR.CODE,
+                    message : MESSAGE_ERROR_ARCHIDOC.MOVE_ERROR.MESSAGE,
                     detail : (error as Error).message
                 }, HttpStatus.INTERNAL_SERVER_ERROR)
             }
@@ -89,8 +89,8 @@ export class ArchivDossierService {
         if(!existing) {
             throw new HttpException({
                 statusCode : HttpStatus.NOT_FOUND,
-                code : "DOSSIER_NOT_FOUND",
-                message : "le document archivé demandé est introuvable."
+                code : MESSAGE_ERROR_ARCHIDOC.DOSSIER_NOT_FOUND_SIMPLE.CODE,
+                message : MESSAGE_ERROR_ARCHIDOC.DOSSIER_NOT_FOUND_SIMPLE.MESSAGE
             }, HttpStatus.NOT_FOUND)
         }
 
@@ -102,8 +102,8 @@ export class ArchivDossierService {
         if(!softDelete){
             throw new HttpException({
                 statusCode : HttpStatus.INTERNAL_SERVER_ERROR,
-                code : "DOCUMENT_FOR_DELETION_ERROR",
-                message : "le document dont le remplacement doit etre fait est introuvable."
+                code : MESSAGE_ERROR_ARCHIDOC.DOCUMENT_FOR_DELETION_ERROR.CODE,
+                message : MESSAGE_ERROR_ARCHIDOC.DOCUMENT_FOR_DELETION_ERROR.MESSAGE
             }, HttpStatus.INTERNAL_SERVER_ERROR)
         }
 
@@ -123,8 +123,8 @@ export class ArchivDossierService {
             }catch(error){
                 throw new HttpException({
                     statusCode : HttpStatus.INTERNAL_SERVER_ERROR,
-                    code : "MOVE_ERROR",
-                    message : "impossible de déplacer le fichier.",
+                    code : MESSAGE_ERROR_ARCHIDOC.MOVE_ERROR.CODE,
+                    message : MESSAGE_ERROR_ARCHIDOC.MOVE_ERROR.MESSAGE,
                     detail : (error as Error).message
                 }, HttpStatus.INTERNAL_SERVER_ERROR)
             }
@@ -134,14 +134,14 @@ export class ArchivDossierService {
 
     // find only dossier
     async findOnlyDossier(data : FindOnlyDossierInput){
-
+    
         const dossier = this.archivDossierRepository.findOnlyDossier(data)
 
         if(!dossier) {
             throw new HttpException({
                 statusCode : HttpStatus.NOT_FOUND,
-                code : "DOSSIER_NOT_FOUND",
-                message : "le document archivé demandé est introuvable."
+                code : MESSAGE_ERROR_ARCHIDOC.DOSSIER_NOT_FOUND_SIMPLE.CODE,
+                message : MESSAGE_ERROR_ARCHIDOC.DOSSIER_NOT_FOUND_SIMPLE.MESSAGE
             }, HttpStatus.NOT_FOUND)
         }
 

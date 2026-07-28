@@ -88,13 +88,13 @@ export class Patient {
 
     // ===== donné de contact =====
     @Index()
-    @Column({ length: 255, type: "varchar" })
-    email!: string
+    @Column({ length: 255, type: "varchar" , nullable : true})
+    email?: string
 
     // Numéro de téléphone principal du patient
     @Index()
-    @Column({ length: 255, type: "varchar" })
-    numero!: string
+    @Column({ length: 255, type: "varchar" , nullable : true})
+    numero?: string
 
     // Numéro de téléphone secondaire (facultatif)
     @Column({ length: 255, type: "varchar", nullable: true })
@@ -120,6 +120,34 @@ export class Patient {
     @Index()
     @Column({ length: 255, type: "varchar", unique: true , nullable : true})
     numCMU?: string
+
+    // champs concernant les dossier provisoir 
+    @Column({type : "enum", enum : ["PROVISOIRE", "DEFINITIF"],  default: "DEFINITIF"})
+    statusDossier! : "PROVISOIRE" | "DEFINITIF"
+
+    // motif du provisoir 
+    @Column({type : "enum", enum : ["URGENCE_VITAL", "PATIENT_INCONSCIENT", "IDENTITE_INCONNUE", "MINEUR_NON_ACCOMPAGNE", "PANNE_SYSTEME", "AUTRE"], nullable : true})
+    motifDossierProvisoire? : "URGENCE_VITAL" | "PATIENT_INCONSCIENT" | "IDENTITE_INCONNUE" | "MINEUR_NON_ACCOMPAGNE" | "PANNE_SYSTEME" | "AUTRE"
+
+    // service a l'origine de la creation 
+    @Column({type : "varchar", length : 255, nullable : true})
+    serviceCreation!: string
+
+    // quelque motif pour identifier le patient inconscient/inconnu 
+    @Column({type : "text", nullable : true})
+    signalement!: string
+
+    // date limite de regularisation 
+    @Column({type : "timestamp", nullable : true})
+    dateLimiteRegulation!: Date
+
+    // date de regularisation 
+    @Column({type : "timestamp", nullable : true})
+    regularisAt!: Date 
+
+    // utilisateur qui a fait la regularisation 
+    @Column({type : "varchar", length : 255, nullable : true})
+    regularisBy!: string
 
     // metadonnée systeme
     @CreateDateColumn()

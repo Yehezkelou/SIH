@@ -2,11 +2,11 @@ import * as crypto from "crypto"
 
 
 
-export const PatientIdGenerated = (name: string) : string => {
+export const PatientIdGenerated = (name: string, isProvisoir : boolean = false) : string => {
 
     // Format [PREFIXE]-[ISO_DATE]-[STARWITH(NOM)]-[SEQUENCE]
 
-    const prefixe = "SIH" 
+    const prefixe = isProvisoir ? "PPI" :  "SIH" 
     const year = new Date().getFullYear().toString()
    
     // on securise la premier lettre du nom

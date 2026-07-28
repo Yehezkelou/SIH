@@ -1,3 +1,4 @@
+import { identity } from "rxjs";
 import z from "zod";
 
 
@@ -145,6 +146,82 @@ export const CreatePatientSchema = z.object({
     })
 })
 
+// schema : patient provisoir 
+export const CreatePatientProvisoirSchema = z.object({
+    identity : z.object({
+        nom : z
+            .string()
+            .default("PATIENT-NOM-X"),
+
+        prenom : z
+            .string()
+            .default("PATIENT-PRENOM-X"),
+
+        age : z
+            .number()
+            .optional(),
+
+        genre : z
+            .enum(["M", "F"])
+            .default("M"),
+
+        dateNaissance : z
+            .date()
+            .default(new Date()),
+
+        lieuNaissance : z
+            .string()
+            .default("PATIENT-LIEU-X"),
+    }),
+
+    urgence : z.object({
+        motifProvisoir : z
+            .enum(["URGENCE_VITAL" , "PATIENT_INCONSCIENT" , "IDENTITE_INCONNUE" , "MINEUR_NON_ACCOMPAGNE" , "PANNE_SYSTEME", "AUTRE"])
+            .optional(),
+        
+        serviceCreation : z
+            .string()
+            .optional(),
+
+        signalement : z
+            .string()
+            .max(1000)
+            .optional(),
+
+    }),
+
+    contact : z.object({
+        email : z
+            .email()
+            .optional(),
+
+        numero : z
+            .string()
+            .max(10, "le numero doit faire 10 chiffre")
+            .refine((num) => {
+                const prefixe = ["01", "05", "07"]
+                return prefixe.some((pre) => num.startsWith(pre))
+            },{
+                message : "le numero doit contenir le prefixe de l'operateur (ex: 01, 05, 07....)"
+            })
+            .optional(),
+        
+        contactUrgence : z
+            .string()
+            .max(10, "le numero doit faire 10 chiffre")
+            .refine((num) => {
+                const prefixe = ["01", "05", "07"]
+                return prefixe.some((pre) => num.startsWith(pre))
+            },{
+                message : "le numero doit contenir le prefixe de l'operateur (ex: 01, 05, 07....)"
+            })
+            .optional(),
+    }).optional(),
+
+    numeroDossier : z.string().optional(),
+    createdBy : z.uuid("Identifiant du createur est invalide"), 
+})
+
 
 // schema :  update patient
 export const UpdatePatientSchema = CreatePatientSchema.extend({
@@ -158,6 +235,13 @@ export const UpdatePatientSchema = CreatePatientSchema.extend({
     contact : true,
     uniqueIdentity : true, 
     famille : true
+})
+
+// schema : regulariser patient 
+export const RegularizationPatientSchema = UpdatePatientSchema.extend({
+    identity : CreatePatientSchema.shape.identity,
+    contact : CreatePatientSchema.shape.contact,
+    uniqueIdentity : CreatePatientSchema.shape.uniqueIdentity
 })
 
 
@@ -222,3 +306,5 @@ export type UpdatePatientInput = z.infer<typeof UpdatePatientSchema>
 export type SearchPatientInput = z.infer<typeof SearchPatientSchema>
 export type FindOnePatientInput = z.infer<typeof FindOnlyPatientSchema>
 export type SoftDeleteOnePatientInput = z.infer<typeof softDeleteOnlyPatientSchema>
+export type RegularizationPatientInput = z.infer<typeof RegularizationPatientSchema>
+export type CreatePatientProvisoirInput = z.infer<typeof CreatePatientProvisoirSchema>

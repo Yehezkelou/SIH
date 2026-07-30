@@ -1,9 +1,12 @@
 import { DataSource, ILike, Repository } from "typeorm";
 import { Patient } from "../entities/patient.entity";
 import { Injectable } from "@nestjs/common";
-import { CreatePatientInput, CreatePatientProvisoirInput, FindOnePatientInput, RegularizationPatientInput, SearchPatientInput, SoftDeleteOnePatientInput, UpdatePatientInput } from "../validator";
+import { CreatePatientInput, CreatePatientProvisoirInput, FindOnePatientInput, MergePatientInput, RegularizationPatientInput, SearchPatientInput, SoftDeleteOnePatientInput, UpdatePatientInput } from "../validator";
 import { PatientIdGenerated } from "../../../helpers/func/uniquePatientIdGenerated";
-
+import { toEntitySnapshot } from "../../../helpers/entitySnapshot";
+import { ArchivDossier } from "../entities/archivDossier.entity";
+import { id } from "zod/locales";
+import { PatientMergeLog } from "../entities/patientMergeLog.entity";
 
 
 
@@ -13,7 +16,7 @@ export class PatientRepository extends Repository<Patient> {
      
     //injecter la config qui permet de communiquer avec notre base donner 
     // et d y effectuer des methode 
-    constructor(dataSource: DataSource) {
+    constructor(private dataSource: DataSource) {
         super(Patient, dataSource.createEntityManager())
     }
 
@@ -123,7 +126,7 @@ export class PatientRepository extends Repository<Patient> {
                 break;
             }else{
                 return {
-                    existNumero:true,
+                    existNumero: true,
                     existingNumero : patient
                 }
             }
@@ -206,7 +209,6 @@ export class PatientRepository extends Repository<Patient> {
         }
 
         //merge 
-        
         const patient = this.merge(dossierProvisoir, {
             // status 
             statusDossier : "DEFINITIF",
@@ -351,6 +353,7 @@ export class PatientRepository extends Repository<Patient> {
         if (query.genre) { whereObject["genre"] = query.genre }
         if (query.email) { whereObject["email"] = query.email }
         if (query.numero) { whereObject["numero"] = query.numero }
+        if (query.statusDossier) { whereObject["statusDossier"] = query.statusDossier}
 
         const [patients, total] = await this.findAndCount({
             where: { ...whereObject },
@@ -416,6 +419,7 @@ export class PatientRepository extends Repository<Patient> {
         return existing
     }
 
+
     // supression en douce du patient 
     async softDeletePatient(data : SoftDeleteOnePatientInput){
         const existing = await this.findOne({
@@ -434,6 +438,133 @@ export class PatientRepository extends Repository<Patient> {
         return this.softDelete(existing)
     }
 
+    // fusion du patient 
+    async fusionPatient(data : MergePatientInput){
+
+        const patient = this.dataSource.transaction(async (manager) => {
+
+            // la source 
+            const source = await manager.findOne(Patient, {
+                where : {id : data.sourcePatientId},
+                withDeleted : false
+            }) 
+
+            // cible 
+            const target = await manager.findOne(Patient, {
+                where : {id : data.targetPatientId}, 
+                withDeleted : false
+            })
+
+            if(!target){
+                return {
+                    targetNotFound : true
+                }
+            }else if(target.mergeIntoPatientId){
+                return {
+                    alreadyMerge : true,
+                    patient : target
+                }
+            }
+            
+            if(!source) {
+                return {
+                    sourceNotFound : true
+                }
+            }else if(source.mergeIntoPatientId){
+                return {
+                    alreadyMerge : true,
+                    patient : source
+                }
+            }
+
+            //  instantane
+            const snapShotSource = toEntitySnapshot(source, this.metadata)
+            const snapShotTargetBefore = toEntitySnapshot(target, this.metadata)
+
+    
+            // merge 
+            const patient = this.merge(target, {
+
+                // identité 
+                nom : data.ChampsAConserver?.identity?.nom ?? target.nom ?? source.nom,
+                prenom : data.ChampsAConserver?.identity?.prenom ?? target.prenom ?? source.prenom,
+                dateNaissance : data.ChampsAConserver?.identity?.dateNaissance.toDateString() ?? target.dateNaissance ?? source.dateNaissance,
+                lieuNaissance : data.ChampsAConserver?.identity?.lieuNaissance ?? target.lieuNaissance ?? source.lieuNaissance,
+                age : data.ChampsAConserver?.identity?.age ?? target.age ?? source.age,
+                genre : data.ChampsAConserver?.identity?.genre ?? target.genre ?? source.genre,
+
+                // famille
+                nomPere : data.ChampsAConserver?.famille?.nomPere ?? target.nomPere ?? source.nomPere,
+                nomMere : data.ChampsAConserver?.famille?.nomMere ?? target.nomMere ?? source.nomMere,
+                tuteur : data.ChampsAConserver?.famille?.tuteur ?? target.tuteur ?? source.tuteur,
+                numeroPere : data.ChampsAConserver?.famille?.numeroPere ?? target.numeroPere ?? source.numeroPere,
+                numeroMere : data.ChampsAConserver?.famille?.numeroMere ?? target.numeroMere ?? source.numeroMere,
+                numeroTuteur : data.ChampsAConserver?.famille?.numeroTuteur ?? target.numeroTuteur ?? source.numeroTuteur,
+
+                // contact
+                email : data.ChampsAConserver?.contact?.email ?? target.email ?? source.email,
+                numero : data.ChampsAConserver?.contact?.numero ?? target.numero ?? source.numero,
+                contactUrgence : data.ChampsAConserver?.contact?.conctactUrgence ?? target.contactUrgence ?? source.contactUrgence,
+                numeroSecondaire : data.ChampsAConserver?.contact?.numeroSecondaire ?? target.numeroSecondaire ?? source.numeroSecondaire,
+
+                // unique identity
+                numIdentityNational : data.ChampsAConserver?.uniqueIdentity?.numIdentityNational ?? target.numIdentityNational ?? source.numIdentityNational,
+                numSecuSocial : data.ChampsAConserver?.uniqueIdentity?.numSecuSocial ?? target.numSecuSocial ?? source.numSecuSocial,
+                numeroPassport : data.ChampsAConserver?.uniqueIdentity?.numeroPassport ?? target.numeroPassport ?? source.numeroPassport,
+                numCMU : data.ChampsAConserver?.uniqueIdentity?.numeroCMU ?? target.numCMU ?? source.numCMU,
+            })
+
+            // deplacer les dossier vers la cible 
+
+            this.manager.update(ArchivDossier, {
+                patient : {
+                    id : source.id
+                }, 
+        
+            },
+            {
+                patient : target , dossierId : target.id 
+            } 
+        )
+
+        // mettre ajour l'id du dossier absorbé 
+        source.mergeIntoPatientId = target.id
+
+        // softe delete de la source 
+        this.manager.softDelete(Patient , source)
+
+        // insere patient mergeLog
+        const patientMergeLog = this.manager.create(PatientMergeLog, {
+
+            // identité
+            sourceNumeroDossier : source.uniquePatientId,
+            sourcePatientId : source.id,
+            targetNumeroDossier : target.uniquePatientId,
+            targetPatientId : target.id,
+
+            // snapShot
+            sourceSnapShot : snapShotSource,
+            targetSnapShotAfter : toEntitySnapshot(patient, this.metadata),
+            targetSnapShotBefore : snapShotTargetBefore,
+
+            // raison de la fusion 
+            motifFusion : data.motifFusion,
+
+            // auteur
+            mergedBy : data.mergeBy
+        })
+
+        manager.save(PatientMergeLog, patientMergeLog)
+
+        return {
+            target : patient,
+            mergeLog : PatientMergeLog 
+        }
+    })
+    }
+    
 }
 
 
+
+ 

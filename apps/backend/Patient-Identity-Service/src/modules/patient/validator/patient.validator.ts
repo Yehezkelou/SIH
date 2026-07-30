@@ -1,3 +1,4 @@
+import { truncate } from "fs";
 import { identity } from "rxjs";
 import z from "zod";
 
@@ -257,6 +258,37 @@ export const softDeleteOnlyPatientSchema = FindOnlyPatientSchema.extend({
     deletedBy : z.uuid("Identifiant de la personne qui a supprimé est invalide") 
 })
 
+// schema : fusion 
+export const MergePatientSchema = z.object({
+
+    // donné de la fusion
+    sourcePatientId : z.uuid("Identifiant du patient source est invalide"),
+    targetPatientId : z.uuid("Identifiant du patient cible est invalide"),
+
+    mergeBy : z.uuid("Identifiant du createur de la fusion est invalide"),
+
+    motifFusion : z
+        .enum(["DOUBLON_REGULARISATION", "DOUBLON_DETECTE_SIMILARITE", "DOUBLON_MANUEL"])
+        .default("DOUBLON_MANUEL"),
+
+    ChampsAConserver : CreatePatientSchema
+        .pick({
+            identity : true,
+            famille: true,
+            contact : true,
+            uniqueIdentity : true
+        })
+        .partial()
+        .optional()
+        
+
+    
+}).refine((data) => data.sourcePatientId !== data.targetPatientId, 
+"le dossier source et le dossier cible ne peuvent pas etre identiques"
+)
+
+
+
 
 //Schema de validation des donnée de recherche entrant 
 export const SearchPatientSchema = z.object({
@@ -289,6 +321,9 @@ export const SearchPatientSchema = z.object({
     numeroPassport : z.string().optional(),
     numCMU : z.string().optional(),
     uniquePatientId : z.string().optional(),
+
+    // status du dossier (provisoir ou definitif)
+    statusDossier : z.enum(["DEFINITIF", "PROVISOIR"]).optional(),
   
 
     // pagination 
@@ -308,3 +343,4 @@ export type FindOnePatientInput = z.infer<typeof FindOnlyPatientSchema>
 export type SoftDeleteOnePatientInput = z.infer<typeof softDeleteOnlyPatientSchema>
 export type RegularizationPatientInput = z.infer<typeof RegularizationPatientSchema>
 export type CreatePatientProvisoirInput = z.infer<typeof CreatePatientProvisoirSchema>
+export type MergePatientInput = z.infer<typeof MergePatientSchema>

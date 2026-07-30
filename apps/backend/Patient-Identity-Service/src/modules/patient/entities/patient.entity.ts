@@ -25,6 +25,10 @@ export class Patient {
     @Column({ length: 255, type: "varchar", unique: true, nullable: false })
     uniquePatientId!: string;
 
+    // identifiant du dossier patient absorbé
+    @Column({type : "uuid", nullable : true})
+    mergeIntoPatientId?: string
+
     
     // ===== identité civile =====
 

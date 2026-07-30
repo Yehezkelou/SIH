@@ -1,6 +1,6 @@
 import { Body, Controller, Delete, Get, HttpStatus, Post, Put, Query, Res } from "@nestjs/common";
 import { PinoLogger } from "nestjs-pino";
-import { CreatePatientDto, SearchPatientDto, UpdatePatientDto, FindOnePatientDto, SoftDeletePatientDto } from "../dto/patient.dto";
+import { CreatePatientDto, SearchPatientDto, UpdatePatientDto, FindOnePatientDto, SoftDeletePatientDto, CreatePatientProvisoirDto, RegularizationPatientDto } from "../dto/patient.dto";
 import type {Response} from "express" 
 import { Patient } from "../entities/patient.entity";
 import { PatientService } from "../services/patient.service";
@@ -18,6 +18,7 @@ export class patientController{
 
 
 
+    // create patient definitif
     @Post("create")
     @UsePatientFiles("dossiers")
     async createPatient(@Body() data : {patient : CreatePatientDto, dossier : CreateArchivDossierDto}, files : Express.Multer.File[], @Res() res : Response){
@@ -40,6 +41,41 @@ export class patientController{
         })
     }
 
+    // create patient provisoir 
+    @Post("provisoir")
+    async createPatientProvisoir(@Body() data : CreatePatientProvisoirDto, @Res() res : Response){
+        const result = await this.service.createPatientProvisoir(data)
+
+        this.logger.info({
+            message : "Creation du patient provisoire",
+            data : result
+        })
+
+        res.status(HttpStatus.CREATED).json({
+            message : "SUCCEFULL",
+            data : result,
+            timestamp : new Date().toISOString()
+        })
+    }
+
+    // regulariser patient
+    @Put("regularisation")
+    async regularisePatient(@Body() data : RegularizationPatientDto, @Res() res : Response){
+        const result = await this.service.regularisePatient(data)
+
+        this.logger.info({
+            message : "Regularisation du patient",
+            data : result
+        })
+
+        res.status(HttpStatus.OK).json({
+            message : "SUCCEFULL",
+            data : result,
+            timestamp : new Date().toISOString()
+        })
+    }
+
+    // update patient 
     @Put("²update")
     async updatePatient(@Body() patient : UpdatePatientDto, @Res() res : Response){
 

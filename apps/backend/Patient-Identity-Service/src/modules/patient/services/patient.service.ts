@@ -1,11 +1,10 @@
 import {HttpException, HttpStatus, Injectable } from "@nestjs/common";
 import { PatientRepository } from "../repositories/patient.repository";
-import { CreateArchivDossierInput, CreatePatientInput, EXTENSION, FindOnePatientInput, SearchPatientInput, SoftDeleteOnePatientInput, UpdatePatientInput } from "../validator";
+import { CreateArchivDossierInput, CreatePatientInput, CreatePatientProvisoirInput, EXTENSION, FindOnePatientInput, RegularizationPatientInput, SearchPatientInput, SoftDeleteOnePatientInput, UpdatePatientInput } from "../validator";
 import { ArchivDossierRepository } from "../repositories/archivDossier.repository";
 import path from "path";
 import { Patient } from "../entities/patient.entity";
 import { MESSAGE_ERROR } from "../../../helpers/messageError";
-
 
 
 
@@ -69,6 +68,58 @@ export class PatientService {
 
         return newPatient      
     }
+
+    // create patient provisoir 
+    async createPatientProvisoir(data : CreatePatientProvisoirInput){
+
+        const provisoir = await this.patientRepository.createPatientProvisoir(data)
+
+        if("existNumero" in  provisoir){
+            throw new HttpException({
+                statusCode : HttpStatus.CONFLICT,
+                code : MESSAGE_ERROR.NUMERO_DE_DOSSIER_ALREADY_EXIST.CODE,
+                message : MESSAGE_ERROR.NUMERO_DE_DOSSIER_ALREADY_EXIST.MESSAGE,
+                metadata : provisoir.existingNumero
+            }, HttpStatus.CONFLICT)
+        }
+        
+        return provisoir
+    }
+
+    // regulariser patient 
+    async regularisePatient(data : RegularizationPatientInput){
+        
+        const patient = await this.patientRepository.regularisationPatient(data)
+
+        if("provisoirExist" in patient && patient.provisoirExist === false){
+            throw new HttpException({
+                statusCode : HttpStatus.NOT_FOUND,
+                code : MESSAGE_ERROR.PATIENT_PROVISOIR_NOT_FOUND.CODE,
+                message : MESSAGE_ERROR.PATIENT_PROVISOIR_NOT_FOUND.MESSAGE,
+                metadata : patient
+            },HttpStatus.NOT_FOUND)
+            
+        }else if("status" in patient){
+            throw new HttpException({
+                statusCode : HttpStatus.BAD_REQUEST,
+                code : MESSAGE_ERROR.DOSSIER_NOT_PROVISIONAL.CODE,
+                message : MESSAGE_ERROR.DOSSIER_NOT_PROVISIONAL.MESSAGE,
+                metadata : patient.dossierProvisoir
+            }, HttpStatus.BAD_REQUEST)
+
+        }else if ("exist" in patient){
+            throw new HttpException({
+                statusCode : HttpStatus.CONFLICT,
+                code : MESSAGE_ERROR.PATIENT_POSSIBLE_DUPLICATE.CODE,
+                message : MESSAGE_ERROR.PATIENT_POSSIBLE_DUPLICATE.MESSAGE,
+                metadata : patient.existingPatient
+            }, HttpStatus.CONFLICT)
+        }
+
+
+        return patient
+    }
+
 
     // update only Patient 
     async updatePatient(data : UpdatePatientInput){

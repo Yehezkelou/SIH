@@ -1,5 +1,5 @@
 import { UseZodSchema } from "../../../helpers/decorator/zodSchema.decorator";
-import { CreatePatientInput, CreatePatientSchema, SearchPatientInput, SearchPatientSchema, UpdatePatientInput, UpdatePatientSchema, FindOnePatientInput, FindOnlyPatientSchema, SoftDeleteOnePatientInput, softDeleteOnlyPatientSchema } from "../validator";
+import { CreatePatientInput, CreatePatientSchema, SearchPatientInput, SearchPatientSchema, UpdatePatientInput, UpdatePatientSchema, FindOnePatientInput, FindOnlyPatientSchema, SoftDeleteOnePatientInput, softDeleteOnlyPatientSchema, CreatePatientProvisoirInput, CreatePatientProvisoirSchema, RegularizationPatientInput, RegularizationPatientSchema } from "../validator";
 
 // dto creation de patient
 @UseZodSchema(CreatePatientSchema)
@@ -117,4 +117,65 @@ export class SoftDeletePatientDto implements SoftDeleteOnePatientInput {
     patientId!: string;
     numeroDossier!: string;
     deletedBy!: string;
+}
+
+// dto pour la création de patient provisoire
+@UseZodSchema(CreatePatientProvisoirSchema)
+export class CreatePatientProvisoirDto implements CreatePatientProvisoirInput {
+    identity!: {
+        nom: string;
+        prenom: string;
+        age?: number;
+        genre: "M" | "F";
+        dateNaissance: Date;
+        lieuNaissance: string;
+    };
+    urgence!: {
+        motifProvisoir?: "URGENCE_VITAL" | "PATIENT_INCONSCIENT" | "IDENTITE_INCONNUE" | "MINEUR_NON_ACCOMPAGNE" | "PANNE_SYSTEME" | "AUTRE";
+        serviceCreation?: string;
+        signalement?: string;
+    };
+    contact?: {
+        email?: string;
+        numero?: string;
+        contactUrgence?: string;
+    };
+    numeroDossier?: string;
+    createdBy!: string;
+}
+
+// dto pour la régularisation de patient
+@UseZodSchema(RegularizationPatientSchema)
+export class RegularizationPatientDto implements RegularizationPatientInput {
+    patientId!: string;
+    numeroDossier!: string;
+    updatedBy!: string;
+    identity!: {
+        nom: string;
+        prenom: string;
+        age: number;
+        genre: "M" | "F";
+        dateNaissance: Date;
+        lieuNaissance?: string;
+    };
+    famille?: {
+        nomPere?: string;
+        numeroPere?: string;
+        nomMere?: string;
+        numeroMere?: string;
+        tuteur?: string;
+        numeroTuteur?: string;
+    };
+    contact!: {
+        email?: string;
+        numero?: string;
+        numeroSecondaire?: string;
+        conctactUrgence?: string;
+    };
+    uniqueIdentity!: {
+        numSecuSocial?: string;
+        numIdentityNational?: string;
+        numeroPassport?: string;
+        numeroCMU?: string;
+    };
 }

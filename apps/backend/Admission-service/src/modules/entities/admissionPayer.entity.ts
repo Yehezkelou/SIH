@@ -1,5 +1,6 @@
-import { Column, CreateDateColumn, Entity, Index, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Column, CreateDateColumn, DeleteDateColumn, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { AdmissionPayerType } from "./admission.enum";
+import { Admission } from "./admission.entity";
 
 
 
@@ -24,30 +25,47 @@ export class AdmissionPayer {
     payerType!: string
 
     @Index()
-    @Column({type: "string", nullable : true})
+    @Column({type: "varchar", length : 255, nullable : true})
     name!: string
 
     @Index()
-    @Column({type: "string", nullable : true})
+    @Column({type: "varchar", length : 255, nullable : true})
     policyNumber!: string
 
     @Index()
-    @Column({type: "number", nullable : true})
+    @Column({type: "numeric", nullable : true})
     coveragePercentage!: number
 
     @Index()
-    @Column({type: "number", nullable : true})
+    @Column({type: "numeric", nullable : true})
     coverageLimit!: number
 
     @Index()
     @Column({type: "date", nullable : true})
     validUntil!: Date
 
+    // relation inverse
+    @ManyToOne(() => Admission, ad => ad.payers)
+    @JoinColumn({name : "admissionId"})
+    admission!: Admission
 
     @CreateDateColumn()
     createdAt!: Date
 
     @UpdateDateColumn()
-    updatedAt!: Date 
-    
+    updatedAt!: Date
+
+    @Column({length : 255, type : "varchar", nullable : true})
+    createdBy?: string
+
+    @Column({length : 255, type : "varchar", nullable : true})
+    updatedBy?: string
+
+    // Suppression douce : conserve la trace d'un payeur retire (piece comptable)
+    @DeleteDateColumn()
+    deletedAt?: Date
+
+    @Column({length : 255, type : "varchar", nullable : true})
+    deletedBy?: string
+
 }

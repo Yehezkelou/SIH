@@ -1,5 +1,3 @@
-import { truncate } from "fs";
-import { identity } from "rxjs";
 import z from "zod";
 
 
@@ -287,6 +285,27 @@ export const MergePatientSchema = z.object({
 "le dossier source et le dossier cible ne peuvent pas etre identiques"
 )
 
+// schema : schedule cron 
+
+export const SearchSimilarityAlertSchema = z.object({
+    status : z.enum(["EN_ATTENTE", "CONFIRMEE_FUSION", "IGNOREE", "FAUX_POSITIF"]).optional(),
+
+    niveau : z.enum(["MODEREE", "FORTE"]).optional(),
+
+    page: z.coerce.number().int().default(1),
+
+    limit : z.coerce.number().int().max(50).min(5),
+
+})
+
+export const ReviewSimilarityAlertSchema = z.object({
+    alertId : z.uuid("Identifiant de l'alert est invalide"),
+
+    decision : z.enum(["IGNOREE", "FAUX_POSITIF"]),
+    
+    reviewedBy : z.uuid("Identifiant de l'auteur de la revu des alerte de similarité est invalide")
+})
+
 
 
 
@@ -344,3 +363,5 @@ export type SoftDeleteOnePatientInput = z.infer<typeof softDeleteOnlyPatientSche
 export type RegularizationPatientInput = z.infer<typeof RegularizationPatientSchema>
 export type CreatePatientProvisoirInput = z.infer<typeof CreatePatientProvisoirSchema>
 export type MergePatientInput = z.infer<typeof MergePatientSchema>
+export type SearchSimilaryAlerInput = z.infer<typeof SearchSimilarityAlertSchema>
+export type ReviewSimilarityAlertInput = z.infer<typeof ReviewSimilarityAlertSchema>

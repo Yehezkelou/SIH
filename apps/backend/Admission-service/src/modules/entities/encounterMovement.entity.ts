@@ -1,4 +1,4 @@
-import { Column, CreateDateColumn, Entity,  Index, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity,  Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { MovementType } from "./admission.enum";
 import { Encounter } from "./encounter.entity";
 
@@ -11,7 +11,6 @@ import { Encounter } from "./encounter.entity";
 export class EncounterMovement {
     @PrimaryGeneratedColumn('uuid')
     id!: string
-
 
     // reference vers l'encounter 
     @Index()
@@ -63,9 +62,10 @@ export class EncounterMovement {
     reason!: string 
     
 
-    // relation inverse
+    // relation inverse (reutilise la colonne encounterId deja declaree ci-dessus)
     @ManyToOne(() => Encounter, encounter => encounter.movements)
-    encounter!: Encounter 
+    @JoinColumn({name : "encounterId"})
+    encounter!: Encounter
 
 
     @CreateDateColumn()

@@ -2,20 +2,42 @@
 
 // cela concerne le status de l'admission 
 export const  AdmissionStatus = {
+    // PENDING : le dossier d'admission est en cours
     PENDING : "PENDING",
+
+    // AMITTED : le patient est prise en charge par l'equipe soin
     ADMITTED : "ADMITTED",
+
+    // le patient a quitté l'hopital
     DISCHARGED : "DISCHARGED",
+
+    // le dossier d'admission a été annulé
     CANCELLED  : "CANCELLED",
+
+    // PRE_ADMITTED : le dossier d'admission es programmé et planifiée a l'avance 
     PRE_ADMITTED : "PRE_ADMITTED",
+
+    // REGISTERED : le patient est est arrivé physiquement
     REGISTERED : "REGISTERED",
-    WAIT_FOR_CAR : "WAIT_FOR_CAR",
+
+    // le patient attend peut etre un taxi ou une famille avant de quitté 
+    // WAIT_FOR_CAR : "WAIT_FOR_CAR",
+
+    // le dossier est clo a tout les niveau 
     CLOSED : "CLOSED",
+
+    // le medecin a validé la sortie mais le patient n'a pas encore quitté l'hopitale
     DISCHARGED_PENDING : "DISCHARGED_PENDING", 
+
+    // TRANSFERED : le patient a ete transfére dans un autre service
     TRANSFERED : "TRANSFERED",
     
 } as const 
 
 // cela concerne le type d'admission 
+// IN pour une hospitalisation 
+// OUT pour une entré de consultation simplement
+// EMER pour une urgence
 export const AdmissionType = {
     INPATIENT : "INPATIENT",
     OUTPATIENT : "OUTPATIENT",

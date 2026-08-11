@@ -1,6 +1,7 @@
-import { Column, CreateDateColumn, Entity, Index, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Column, CreateDateColumn, DeleteDateColumn, Entity, Index, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { EncounterStatus } from "./admission.enum";
 import { EncounterMovement } from "./encounterMovement.entity";
+import { Admission } from "./admission.entity";
 
 
 
@@ -17,10 +18,15 @@ export class Encounter {
     @Column({type : "uuid" , nullable : true})
     patientId!: string
 
-    // reference vers l'admission 
+    // reference vers l'admission
     @Index()
     @Column({type : "uuid", nullable : true})
-    admissionId!: string 
+    admissionId!: string
+
+    // relation inverse (Encounter porte la colonne admissionId)
+    @OneToOne(() => Admission, admission => admission.encounters)
+    @JoinColumn({name : "admissionId"})
+    admission!: Admission
 
     @Index()
     @Column({type : "enum", enum : EncounterStatus, default : EncounterStatus.ENCOUNTER_PENDING})
@@ -32,15 +38,15 @@ export class Encounter {
     currentDepartmentId!: string
 
 
-    // la chambre actuel
+    // la chambre actuelle
     @Index()
     @Column({type : "uuid", nullable : true})
-    currentRoom!: string
+    currentRoomId!: string
 
-    // le lit actuel 
+    // le lit actuel
     @Index()
     @Column({type : "uuid", nullable : true})
-    currentBed!: string
+    currentBedId!: string
 
     // Date du sejour global 
     @Index()
@@ -52,17 +58,32 @@ export class Encounter {
     endDate!: Date
 
 
-    // un encounter peut avoir plusieur mouvement 
-    @OneToMany(() => EncounterMovement, (movement) => movement.encounterId)
+    // un encounter peut avoir plusieur mouvement
+    @OneToMany(() => EncounterMovement, (movement) => movement.encounter)
     movements!: EncounterMovement[]
 
 
-    // audit 
+    // audit
     @CreateDateColumn()
     createdAt!: Date
 
     @UpdateDateColumn()
     updatedAt!: Date
 
+    // Utilisateur/compte a l'origine de la creation de l'encounter
+    @Column({length : 255, type : "varchar", nullable : true})
+    createdBy?: string
+
+    // Utilisateur/compte a l'origine de la derniere modification
+    @Column({length : 255, type : "varchar", nullable : true})
+    updatedBy?: string
+
+    // Suppression douce : un sejour n'est jamais supprime physiquement
+    @DeleteDateColumn()
+    deletedAt?: Date
+
+    // Utilisateur/compte a l'origine de la suppression
+    @Column({length : 255, type : "varchar", nullable : true})
+    deletedBy?: string
 
 }

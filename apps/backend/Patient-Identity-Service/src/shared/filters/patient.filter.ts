@@ -5,8 +5,6 @@ import { Logger } from "nestjs-pino";
 
 
 
-
-
 @Catch()
 export class PatientFilterException extends SharedBaseExceptionFilter {
     constructor(

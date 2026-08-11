@@ -1,4 +1,4 @@
-import { Column, CreateDateColumn, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Column, CreateDateColumn, DeleteDateColumn, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { AdmissionDocumentType } from "./admission.enum";
 import { Admission } from "./admission.entity";
 
@@ -18,9 +18,9 @@ export class AdmissionDocument {
     admissionId!: string
 
    
-    // url 
-    @Column({type : "string", nullable : true})
-    url!: string 
+    // url
+    @Column({type : "varchar", length : 255, nullable : true})
+    url!: string
 
     // champ pour l'admission document
     @Index()
@@ -42,4 +42,17 @@ export class AdmissionDocument {
 
      @CreateDateColumn()
      createdAt!: Date
+
+     @Column({length : 255, type : "varchar", nullable : true})
+     createdBy?: string
+
+     @Column({length : 255, type : "varchar", nullable : true})
+     updatedBy?: string
+
+     // Suppression douce : une piece jointe medico-legale n'est jamais supprimee physiquement
+     @DeleteDateColumn()
+     deletedAt?: Date
+
+     @Column({length : 255, type : "varchar", nullable : true})
+     deletedBy?: string
 }

@@ -7,7 +7,10 @@ export const admissionTypeValues = Object.values(AdmissionType)
 export const CreateAdmissionSchema = z.object({
 
      // reference vers le patient
-    patientId : z.uuid(),
+    patientId : z.uuid("Identifiant du patient est requis"),
+
+    // numero de dossier 
+    admissionNumber : z.string(),
 
     // admission
     admission : z.object({

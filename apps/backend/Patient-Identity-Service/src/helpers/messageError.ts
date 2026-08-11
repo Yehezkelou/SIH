@@ -8,6 +8,9 @@ type T_MESSAGE_ERROR_PATIENT =
     | "PATIENT_IS_PROVISOIR"
     | "PATIENT_POSSIBLE_DUPLICATE"
     | "DOSSIER_NOT_PROVISIONAL"
+    | "PATIENT_MERGE_SOURCE_NOT_FOUND"
+    | "PATIENT_MERGE_TARGET_NOT_FOUND"
+    | "PATIENT_ALREADY_MERGED"
 
 type T_MESSAGE_ERROR_ARCHIDOC = 
     | "DOSSIER_NOT_FOUND" 
@@ -59,6 +62,21 @@ export const MESSAGE_ERROR : Record<T_MESSAGE_ERROR_PATIENT, {MESSAGE : string, 
     PATIENT_IS_PROVISOIR : {
         MESSAGE : "le patient est deja provisoir.",
         CODE : "PATIENT_IS_PROVISOIR"
+    },
+
+    PATIENT_MERGE_SOURCE_NOT_FOUND : {
+        MESSAGE : "le dossier source de la fusion est introuvable",
+        CODE : "PATIENT_MERGE_SOURCE_NOT_FOUND"
+    },
+    
+    PATIENT_MERGE_TARGET_NOT_FOUND : {
+        MESSAGE : "le dossier cible de la fusion est introuvable",
+        CODE : "PATIENT_MERGE_TARGET_NOT_FOUND"
+    },
+
+    PATIENT_ALREADY_MERGED : {
+        MESSAGE : "le patient a deja été fusionné dans un autre dossier.",
+        CODE : "PATIENT_ALREADY_MERGED"
     }
 
 }

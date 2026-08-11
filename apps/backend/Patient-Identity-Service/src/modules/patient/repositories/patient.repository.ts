@@ -13,7 +13,7 @@ import { PatientMergeLog } from "../entities/patientMergeLog.entity";
 @Injectable()
 export class PatientRepository extends Repository<Patient> {
 
-     
+
     //injecter la config qui permet de communiquer avec notre base donner 
     // et d y effectuer des methode 
     constructor(private dataSource: DataSource) {
@@ -26,40 +26,40 @@ export class PatientRepository extends Repository<Patient> {
 
 
         // existing Patient 
-            const existingPatient  = await this.findOne({
-                where : [
-                    {numIdentityNational : data.uniqueIdentity.numIdentityNational},
-                    {numSecuSocial : data.uniqueIdentity.numSecuSocial},
-                    {numCMU : data.uniqueIdentity.numeroCMU},
-                    {numeroPassport : data.uniqueIdentity.numeroPassport}
-                ]
-            })
+        const existingPatient = await this.findOne({
+            where: [
+                { numIdentityNational: data.uniqueIdentity.numIdentityNational },
+                { numSecuSocial: data.uniqueIdentity.numSecuSocial },
+                { numCMU: data.uniqueIdentity.numeroCMU },
+                { numeroPassport: data.uniqueIdentity.numeroPassport }
+            ]
+        })
 
         if (existingPatient) {
             return {
-                exist : true,
+                exist: true,
                 existingPatient
             }
-        } 
-        
+        }
+
         const MaxFind = 5
         let numeroDossier = ""
 
-        for(let i = 1; i <= MaxFind; i++){
-            
+        for (let i = 1; i <= MaxFind; i++) {
+
             numeroDossier = PatientIdGenerated(data.identity.nom)
             const existing = this.findOne({
-                where : {
-                    uniquePatientId : numeroDossier
+                where: {
+                    uniquePatientId: numeroDossier
                 }
             })
-            
-            if(!existing){
+
+            if (!existing) {
                 break;
-            }else{
+            } else {
                 return {
                     existNumero: true,
-                    existingNumero : existing,
+                    existingNumero: existing,
                 }
             }
         }
@@ -73,30 +73,30 @@ export class PatientRepository extends Repository<Patient> {
             prenom: data.identity.prenom,
             age: data.identity.age,
             genre: data.identity.genre,
-            dateNaissance : data.identity.dateNaissance.toDateString(),
-            lieuNaissance : data.identity.lieuNaissance,
+            dateNaissance: data.identity.dateNaissance.toDateString(),
+            lieuNaissance: data.identity.lieuNaissance,
 
             //famille 
-            nomPere : data.famille.nomPere,
-            nomMere : data.famille.nomPere,
-            tuteur : data.famille.tuteur,
-            numeroPere : data.famille.numeroPere,
-            numeroMere : data.famille.numeroMere,
-            numeroTuteur : data.famille.numeroTuteur,
+            nomPere: data.famille.nomPere,
+            nomMere: data.famille.nomPere,
+            tuteur: data.famille.tuteur,
+            numeroPere: data.famille.numeroPere,
+            numeroMere: data.famille.numeroMere,
+            numeroTuteur: data.famille.numeroTuteur,
 
             // donnée de contact
             email: data.contact.email,
             numero: data.contact.numero,
-            contactUrgence : data.contact.conctactUrgence,
-            numeroSecondaire : data.contact.numeroSecondaire,
-            
+            contactUrgence: data.contact.conctactUrgence,
+            numeroSecondaire: data.contact.numeroSecondaire,
+
 
             // unique identité
             numIdentityNational: data.uniqueIdentity.numIdentityNational,
             numSecuSocial: data.uniqueIdentity.numSecuSocial,
-            numeroPassport : data.uniqueIdentity.numeroPassport,
-            numCMU : data.uniqueIdentity.numeroCMU,
-            uniquePatientId : numeroDossier,
+            numeroPassport: data.uniqueIdentity.numeroPassport,
+            numCMU: data.uniqueIdentity.numeroCMU,
+            uniquePatientId: numeroDossier,
 
 
             createdBy: data.CreatedBy.createdBy
@@ -107,103 +107,103 @@ export class PatientRepository extends Repository<Patient> {
     }
 
     // create patient provisoire
-    async createPatientProvisoir(data : CreatePatientProvisoirInput){
+    async createPatientProvisoir(data: CreatePatientProvisoirInput) {
 
 
         const MAX_FIND = 5
         let numeroDossier = ""
 
-        for(let i = 0; i< MAX_FIND; i++){
+        for (let i = 0; i < MAX_FIND; i++) {
             const numeroDossier = PatientIdGenerated(data.identity.nom, true);
 
             const patient = await this.findOne({
-                where : {
-                    uniquePatientId : numeroDossier
+                where: {
+                    uniquePatientId: numeroDossier
                 }
             })
 
-            if(!patient){
+            if (!patient) {
                 break;
-            }else{
+            } else {
                 return {
                     existNumero: true,
-                    existingNumero : patient
+                    existingNumero: patient
                 }
             }
 
         }
 
         const patient = await this.create({
-            
+
             // status 
-            statusDossier : "PROVISOIRE",
+            statusDossier: "PROVISOIRE",
 
             // identité 
-            nom : data.identity.nom,
-            prenom : data.identity.prenom,
-            genre : data.identity.genre,
-            age : data.identity.age,
+            nom: data.identity.nom,
+            prenom: data.identity.prenom,
+            genre: data.identity.genre,
+            age: data.identity.age,
 
             // urgence 
-            motifDossierProvisoire : data.urgence.motifProvisoir,
-            serviceCreation : data.urgence.serviceCreation,
-            signalement : data.urgence.signalement,
+            motifDossierProvisoire: data.urgence.motifProvisoir,
+            serviceCreation: data.urgence.serviceCreation,
+            signalement: data.urgence.signalement,
 
             // contact
-            email : data.contact?.email,
-            numero : data.contact?.numero,
-            contactUrgence : data.contact?.contactUrgence,
-            
+            email: data.contact?.email,
+            numero: data.contact?.numero,
+            contactUrgence: data.contact?.contactUrgence,
+
             // numero dossier 
-            uniquePatientId : numeroDossier,
+            uniquePatientId: numeroDossier,
 
 
             // delay du dossier patient 
-            dateLimiteRegulation : new Date().getHours() + parseInt(process.env.PROVISIONAL_DOSSIER_DELAY_HOURS || "48"),
-            
+            dateLimiteRegulation: new Date().getHours() + parseInt(process.env.PROVISIONAL_DOSSIER_DELAY_HOURS || "48"),
+
             // auteur
-            createdBy : data.createdBy,
- 
+            createdBy: data.createdBy,
+
         })
 
         return await this.save(patient);
     }
 
     // regulariser patient provisoir
-    async regularisationPatient(data : RegularizationPatientInput){
+    async regularisationPatient(data: RegularizationPatientInput) {
 
         const dossierProvisoir = await this.findOne({
-            where : {
-                id : data.patientId,
-                uniquePatientId : data.numeroDossier,
+            where: {
+                id: data.patientId,
+                uniquePatientId: data.numeroDossier,
             }
         })
 
-        if(!dossierProvisoir){
+        if (!dossierProvisoir) {
             return {
-                provisoirExist : false,
+                provisoirExist: false,
             }
-        }else if(dossierProvisoir.statusDossier === "DEFINITIF"){
+        } else if (dossierProvisoir.statusDossier === "DEFINITIF") {
             return {
-                status : true,
+                status: true,
                 dossierProvisoir
             }
         }
 
 
         const existingPatient = await this.findOne({
-            where :[ 
-                {numIdentityNational : data.uniqueIdentity.numIdentityNational || ""},
-                {numSecuSocial : data.uniqueIdentity.numSecuSocial || ""},
-                {numeroPassport : data.uniqueIdentity.numeroPassport || ""},
-                {numCMU : data.uniqueIdentity.numeroCMU || ""},
+            where: [
+                { numIdentityNational: data.uniqueIdentity.numIdentityNational || "" },
+                { numSecuSocial: data.uniqueIdentity.numSecuSocial || "" },
+                { numeroPassport: data.uniqueIdentity.numeroPassport || "" },
+                { numCMU: data.uniqueIdentity.numeroCMU || "" },
             ]
         })
-        
 
-        if(existingPatient){
+
+        if (existingPatient) {
             return {
-                exist : true,
+                exist: true,
                 existingPatient
             }
         }
@@ -211,39 +211,39 @@ export class PatientRepository extends Repository<Patient> {
         //merge 
         const patient = this.merge(dossierProvisoir, {
             // status 
-            statusDossier : "DEFINITIF",
+            statusDossier: "DEFINITIF",
 
             // identié
-            nom : data.identity.nom,
-            prenom : data.identity.prenom,
-            age : data.identity.age,
-            genre : data.identity.genre,
-            dateNaissance : data.identity.dateNaissance.toDateString(),
-            lieuNaissance : data.identity.lieuNaissance,
+            nom: data.identity.nom,
+            prenom: data.identity.prenom,
+            age: data.identity.age,
+            genre: data.identity.genre,
+            dateNaissance: data.identity.dateNaissance.toDateString(),
+            lieuNaissance: data.identity.lieuNaissance,
 
             // famille
-            nomPere : data.famille?.nomPere,
-            nomMere : data.famille?.nomMere,
-            tuteur : data.famille?.tuteur,
-            numeroPere : data.famille?.numeroPere,
-            numeroMere : data.famille?.numeroMere,
-            numeroTuteur : data.famille?.numeroTuteur,
+            nomPere: data.famille?.nomPere,
+            nomMere: data.famille?.nomMere,
+            tuteur: data.famille?.tuteur,
+            numeroPere: data.famille?.numeroPere,
+            numeroMere: data.famille?.numeroMere,
+            numeroTuteur: data.famille?.numeroTuteur,
 
             // contact
-            email : data.contact?.email,
-            numero : data.contact?.numero,
-            contactUrgence : data.contact.conctactUrgence,
-            numeroSecondaire : data.contact.numeroSecondaire,
+            email: data.contact?.email,
+            numero: data.contact?.numero,
+            contactUrgence: data.contact.conctactUrgence,
+            numeroSecondaire: data.contact.numeroSecondaire,
 
             // unique identité
-            numIdentityNational : data.uniqueIdentity.numIdentityNational,
-            numSecuSocial : data.uniqueIdentity.numSecuSocial,
-            numeroPassport : data.uniqueIdentity.numeroPassport,
-            numCMU : data.uniqueIdentity.numeroCMU,
+            numIdentityNational: data.uniqueIdentity.numIdentityNational,
+            numSecuSocial: data.uniqueIdentity.numSecuSocial,
+            numeroPassport: data.uniqueIdentity.numeroPassport,
+            numCMU: data.uniqueIdentity.numeroCMU,
 
             //info d'audit 
-            regularisBy : data.updatedBy,
-            regularisAt : new Date(),
+            regularisBy: data.updatedBy,
+            regularisAt: new Date(),
 
         });
 
@@ -256,7 +256,7 @@ export class PatientRepository extends Repository<Patient> {
 
         // rechercher le patient concerné
         const existing = await this.findOne({
-            where: { id: data.patientId, uniquePatientId : data.numeroDossier}
+            where: { id: data.patientId, uniquePatientId: data.numeroDossier }
         })
 
         if (!existing) return null
@@ -269,75 +269,75 @@ export class PatientRepository extends Repository<Patient> {
             prenom: data.identity?.prenom,
             age: data.identity?.age,
             genre: data.identity?.genre,
-            dateNaissance : data.identity?.dateNaissance?.toDateString(),
-            lieuNaissance : data.identity?.lieuNaissance,
+            dateNaissance: data.identity?.dateNaissance?.toDateString(),
+            lieuNaissance: data.identity?.lieuNaissance,
 
             // famille
-            nomPere : data.famille?.nomPere,
-            nomMere : data.famille?.nomMere,
-            tuteur : data.famille?.tuteur,
-            numeroPere : data.famille?.numeroPere,
-            numeroMere : data.famille?.numeroMere,
-            numeroTuteur : data.famille?.numeroTuteur,
+            nomPere: data.famille?.nomPere,
+            nomMere: data.famille?.nomMere,
+            tuteur: data.famille?.tuteur,
+            numeroPere: data.famille?.numeroPere,
+            numeroMere: data.famille?.numeroMere,
+            numeroTuteur: data.famille?.numeroTuteur,
 
             // contact
             email: data.contact?.email,
             numero: data.contact?.numero,
-            contactUrgence : data.contact?.conctactUrgence,
-            numeroSecondaire : data.contact?.numeroSecondaire,
+            contactUrgence: data.contact?.conctactUrgence,
+            numeroSecondaire: data.contact?.numeroSecondaire,
 
             // unique identité
             numIdentityNational: data.uniqueIdentity?.numIdentityNational,
             numSecuSocial: data.uniqueIdentity?.numSecuSocial,
-            numeroPassport : data.uniqueIdentity?.numeroPassport,
-            numCMU : data.uniqueIdentity?.numeroCMU,
+            numeroPassport: data.uniqueIdentity?.numeroPassport,
+            numCMU: data.uniqueIdentity?.numeroCMU,
 
             // updatedBy
-            updatedBy : data.updatedBy,
+            updatedBy: data.updatedBy,
         })
 
         return await this.save(patient)
     }
 
 
-    
+
 
     // trouver des patient selon un critere
     async findPatient(query: SearchPatientInput) {
 
 
         // recherche precise par champ unique
-        if(query.numIdentityNational 
-            || query.numSecuSocial 
-            ||query.uniquePatientId
+        if (query.numIdentityNational
+            || query.numSecuSocial
+            || query.uniquePatientId
             || query.numCMU
             || query.numeroPassport
-        ){
+        ) {
 
             const conditionsUnique = []
 
-            if(query.numIdentityNational) conditionsUnique.push({numIdentityNational : query.numIdentityNational})
-            if(query.numSecuSocial) conditionsUnique.push({numSecuSocial : query.numSecuSocial})
-            if(query.uniquePatientId) conditionsUnique.push({uniquePatientId : query.uniquePatientId})
-            if(query.numCMU) conditionsUnique.push({numCMU : query.numCMU})
-            if(query.numeroPassport) conditionsUnique.push({numeroPassport : query.numeroPassport})
+            if (query.numIdentityNational) conditionsUnique.push({ numIdentityNational: query.numIdentityNational })
+            if (query.numSecuSocial) conditionsUnique.push({ numSecuSocial: query.numSecuSocial })
+            if (query.uniquePatientId) conditionsUnique.push({ uniquePatientId: query.uniquePatientId })
+            if (query.numCMU) conditionsUnique.push({ numCMU: query.numCMU })
+            if (query.numeroPassport) conditionsUnique.push({ numeroPassport: query.numeroPassport })
 
 
 
             const existing = await this.findOne({
-                where : conditionsUnique
+                where: conditionsUnique
             })
 
-            if(!existing) return null
+            if (!existing) return null
 
             return {
-                total : 1,
-                exactMatch : true,
-                patients : [existing]
+                total: 1,
+                exactMatch: true,
+                patients: [existing]
             }
         }
 
-        
+
         // recherche flou 
         const whereObject: any = {}
 
@@ -349,11 +349,11 @@ export class PatientRepository extends Repository<Patient> {
             whereObject["prenom"] = ILike(`%${query.prenom}%`)
         }
 
-        if (query.age) { whereObject["age"] = query.age}
+        if (query.age) { whereObject["age"] = query.age }
         if (query.genre) { whereObject["genre"] = query.genre }
         if (query.email) { whereObject["email"] = query.email }
         if (query.numero) { whereObject["numero"] = query.numero }
-        if (query.statusDossier) { whereObject["statusDossier"] = query.statusDossier}
+        if (query.statusDossier) { whereObject["statusDossier"] = query.statusDossier }
 
         const [patients, total] = await this.findAndCount({
             where: { ...whereObject },
@@ -369,11 +369,11 @@ export class PatientRepository extends Repository<Patient> {
 
         })
 
-        if(total === 0) return null
+        if (total === 0) return null
 
         return {
-            total, 
-            exactMatch : false,
+            total,
+            exactMatch: false,
             patients
         }
 
@@ -381,21 +381,21 @@ export class PatientRepository extends Repository<Patient> {
 
 
     // trouver tout les patient
-    async findAllPatient(page : number, limit : number){
+    async findAllPatient(page: number, limit: number) {
 
         const [patients, total] = await this.findAndCount({
-            order : {
-                createdAt : "DESC",
-                nom : "ASC",
-                prenom : "ASC"
+            order: {
+                createdAt: "DESC",
+                nom: "ASC",
+                prenom: "ASC"
             },
 
-            take : limit,
-            skip : (page - 1) * limit
+            take: limit,
+            skip: (page - 1) * limit
 
         })
 
-        if(total === 0) return null
+        if (total === 0) return null
 
         return {
             total,
@@ -405,33 +405,33 @@ export class PatientRepository extends Repository<Patient> {
 
 
     // trouver un seul patient 
-    async findOnePatient(data : FindOnePatientInput){
+    async findOnePatient(data: FindOnePatientInput) {
 
         const existing = await this.findOne({
-            where : {
-                uniquePatientId : data.numeroDossier,
-                id : data.patientId
+            where: {
+                uniquePatientId: data.numeroDossier,
+                id: data.patientId
             }
         })
 
-        if(!existing) return null
+        if (!existing) return null
 
         return existing
     }
 
 
     // supression en douce du patient 
-    async softDeletePatient(data : SoftDeleteOnePatientInput){
+    async softDeletePatient(data: SoftDeleteOnePatientInput) {
         const existing = await this.findOne({
 
-            where : {
-                id : data.patientId,
-                uniquePatientId : data.numeroDossier,
-                deletedAt : undefined
+            where: {
+                id: data.patientId,
+                uniquePatientId: data.numeroDossier,
+                deletedAt: undefined
             }
         })
 
-        if(!existing) return null
+        if (!existing) return null
 
         existing.deletedBy = data.deletedBy
 
@@ -439,41 +439,41 @@ export class PatientRepository extends Repository<Patient> {
     }
 
     // fusion du patient 
-    async fusionPatient(data : MergePatientInput){
+    async fusionPatient(data: MergePatientInput) {
 
         const patient = this.dataSource.transaction(async (manager) => {
 
             // la source 
             const source = await manager.findOne(Patient, {
-                where : {id : data.sourcePatientId},
-                withDeleted : false
-            }) 
+                where: { id: data.sourcePatientId },
+                withDeleted: false
+            })
 
             // cible 
             const target = await manager.findOne(Patient, {
-                where : {id : data.targetPatientId}, 
-                withDeleted : false
+                where: { id: data.targetPatientId },
+                withDeleted: false
             })
 
-            if(!target){
+            if (!target) {
                 return {
-                    targetNotFound : true
+                    targetNotFound: true
                 }
-            }else if(target.mergeIntoPatientId){
+            } else if (target.mergeIntoPatientId) {
                 return {
-                    alreadyMerge : true,
-                    patient : target
+                    alreadyMerge: true,
+                    patient: target
                 }
             }
-            
-            if(!source) {
+
+            if (!source) {
                 return {
-                    sourceNotFound : true
+                    sourceNotFound: true
                 }
-            }else if(source.mergeIntoPatientId){
+            } else if (source.mergeIntoPatientId) {
                 return {
-                    alreadyMerge : true,
-                    patient : source
+                    alreadyMerge: true,
+                    patient: source
                 }
             }
 
@@ -481,90 +481,96 @@ export class PatientRepository extends Repository<Patient> {
             const snapShotSource = toEntitySnapshot(source, this.metadata)
             const snapShotTargetBefore = toEntitySnapshot(target, this.metadata)
 
-    
+
             // merge 
-            const patient = this.merge(target, {
+            const patient = await this.merge(target, {
 
                 // identité 
-                nom : data.ChampsAConserver?.identity?.nom ?? target.nom ?? source.nom,
-                prenom : data.ChampsAConserver?.identity?.prenom ?? target.prenom ?? source.prenom,
-                dateNaissance : data.ChampsAConserver?.identity?.dateNaissance.toDateString() ?? target.dateNaissance ?? source.dateNaissance,
-                lieuNaissance : data.ChampsAConserver?.identity?.lieuNaissance ?? target.lieuNaissance ?? source.lieuNaissance,
-                age : data.ChampsAConserver?.identity?.age ?? target.age ?? source.age,
-                genre : data.ChampsAConserver?.identity?.genre ?? target.genre ?? source.genre,
+                nom: data.ChampsAConserver?.identity?.nom ?? target.nom ?? source.nom,
+                prenom: data.ChampsAConserver?.identity?.prenom ?? target.prenom ?? source.prenom,
+                dateNaissance: data.ChampsAConserver?.identity?.dateNaissance.toDateString() ?? target.dateNaissance ?? source.dateNaissance,
+                lieuNaissance: data.ChampsAConserver?.identity?.lieuNaissance ?? target.lieuNaissance ?? source.lieuNaissance,
+                age: data.ChampsAConserver?.identity?.age ?? target.age ?? source.age,
+                genre: data.ChampsAConserver?.identity?.genre ?? target.genre ?? source.genre,
 
                 // famille
-                nomPere : data.ChampsAConserver?.famille?.nomPere ?? target.nomPere ?? source.nomPere,
-                nomMere : data.ChampsAConserver?.famille?.nomMere ?? target.nomMere ?? source.nomMere,
-                tuteur : data.ChampsAConserver?.famille?.tuteur ?? target.tuteur ?? source.tuteur,
-                numeroPere : data.ChampsAConserver?.famille?.numeroPere ?? target.numeroPere ?? source.numeroPere,
-                numeroMere : data.ChampsAConserver?.famille?.numeroMere ?? target.numeroMere ?? source.numeroMere,
-                numeroTuteur : data.ChampsAConserver?.famille?.numeroTuteur ?? target.numeroTuteur ?? source.numeroTuteur,
+                nomPere: data.ChampsAConserver?.famille?.nomPere ?? target.nomPere ?? source.nomPere,
+                nomMere: data.ChampsAConserver?.famille?.nomMere ?? target.nomMere ?? source.nomMere,
+                tuteur: data.ChampsAConserver?.famille?.tuteur ?? target.tuteur ?? source.tuteur,
+                numeroPere: data.ChampsAConserver?.famille?.numeroPere ?? target.numeroPere ?? source.numeroPere,
+                numeroMere: data.ChampsAConserver?.famille?.numeroMere ?? target.numeroMere ?? source.numeroMere,
+                numeroTuteur: data.ChampsAConserver?.famille?.numeroTuteur ?? target.numeroTuteur ?? source.numeroTuteur,
 
                 // contact
-                email : data.ChampsAConserver?.contact?.email ?? target.email ?? source.email,
-                numero : data.ChampsAConserver?.contact?.numero ?? target.numero ?? source.numero,
-                contactUrgence : data.ChampsAConserver?.contact?.conctactUrgence ?? target.contactUrgence ?? source.contactUrgence,
-                numeroSecondaire : data.ChampsAConserver?.contact?.numeroSecondaire ?? target.numeroSecondaire ?? source.numeroSecondaire,
+                email: data.ChampsAConserver?.contact?.email ?? target.email ?? source.email,
+                numero: data.ChampsAConserver?.contact?.numero ?? target.numero ?? source.numero,
+                contactUrgence: data.ChampsAConserver?.contact?.conctactUrgence ?? target.contactUrgence ?? source.contactUrgence,
+                numeroSecondaire: data.ChampsAConserver?.contact?.numeroSecondaire ?? target.numeroSecondaire ?? source.numeroSecondaire,
 
                 // unique identity
-                numIdentityNational : data.ChampsAConserver?.uniqueIdentity?.numIdentityNational ?? target.numIdentityNational ?? source.numIdentityNational,
-                numSecuSocial : data.ChampsAConserver?.uniqueIdentity?.numSecuSocial ?? target.numSecuSocial ?? source.numSecuSocial,
-                numeroPassport : data.ChampsAConserver?.uniqueIdentity?.numeroPassport ?? target.numeroPassport ?? source.numeroPassport,
-                numCMU : data.ChampsAConserver?.uniqueIdentity?.numeroCMU ?? target.numCMU ?? source.numCMU,
+                numIdentityNational: data.ChampsAConserver?.uniqueIdentity?.numIdentityNational ?? target.numIdentityNational ?? source.numIdentityNational,
+                numSecuSocial: data.ChampsAConserver?.uniqueIdentity?.numSecuSocial ?? target.numSecuSocial ?? source.numSecuSocial,
+                numeroPassport: data.ChampsAConserver?.uniqueIdentity?.numeroPassport ?? target.numeroPassport ?? source.numeroPassport,
+                numCMU: data.ChampsAConserver?.uniqueIdentity?.numeroCMU ?? target.numCMU ?? source.numCMU,
             })
 
             // deplacer les dossier vers la cible 
 
             this.manager.update(ArchivDossier, {
-                patient : {
-                    id : source.id
-                }, 
-        
+                patient: {
+                    id: source.id
+                },
+
             },
-            {
-                patient : target , dossierId : target.id 
-            } 
-        )
+                {
+                    patient: target, dossierId: target.id
+                }
+            )
 
-        // mettre ajour l'id du dossier absorbé 
-        source.mergeIntoPatientId = target.id
+            // mettre ajour l'id du dossier absorbé 
+            source.mergeIntoPatientId = target.id
 
-        // softe delete de la source 
-        this.manager.softDelete(Patient , source)
+            // sauvegarde de l'info avant soft delete
+            const saveMergeIdSource = await manager.save(Patient, source)
+            
+            // softe delete de la source 
+            await this.manager.softDelete(Patient, saveMergeIdSource)
 
-        // insere patient mergeLog
-        const patientMergeLog = this.manager.create(PatientMergeLog, {
+            // insere patient mergeLog
+            const patientMergeLog = this.manager.create(PatientMergeLog, {
 
-            // identité
-            sourceNumeroDossier : source.uniquePatientId,
-            sourcePatientId : source.id,
-            targetNumeroDossier : target.uniquePatientId,
-            targetPatientId : target.id,
+                // identité
+                sourceNumeroDossier: source.uniquePatientId,
+                sourcePatientId: source.id,
+                targetNumeroDossier: target.uniquePatientId,
+                targetPatientId: target.id,
 
-            // snapShot
-            sourceSnapShot : snapShotSource,
-            targetSnapShotAfter : toEntitySnapshot(patient, this.metadata),
-            targetSnapShotBefore : snapShotTargetBefore,
+                // snapShot
+                sourceSnapShot: snapShotSource,
+                targetSnapShotAfter: toEntitySnapshot(patient, this.metadata),
+                targetSnapShotBefore: snapShotTargetBefore,
 
-            // raison de la fusion 
-            motifFusion : data.motifFusion,
+                // raison de la fusion 
+                motifFusion: data.motifFusion,
 
-            // auteur
-            mergedBy : data.mergeBy
+                // auteur
+                mergedBy: data.mergeBy
+            })
+
+            manager.save(PatientMergeLog, patientMergeLog)
+
+            return {
+                target: patient,
+                mergeLog: PatientMergeLog
+            }
         })
 
-        manager.save(PatientMergeLog, patientMergeLog)
+   
 
-        return {
-            target : patient,
-            mergeLog : PatientMergeLog 
-        }
-    })
+        return patient
     }
-    
+
 }
 
 
 
- 

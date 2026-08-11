@@ -12,12 +12,16 @@ import { PatientHistory } from "./entities/patient.history.entity";
 import { ArchivDossier } from "./entities/archivDossier.entity";
 import { ArchivDossierHistory } from "./entities/archivDossier.history.entity";
 import { ArchivDossierSubscriber } from "./entities/archivDossier.subscriber";
+import { ScheduleModule } from "@nestjs/schedule";
+import { PatientSimilarityAlert } from "./entities/patientSimilarityAlert.entity";
+import { PatientMergeLog } from "./entities/patientMergeLog.entity";
 
 
 @Module({
     imports: [
-        DatabaseModule.forRoot([Patient, PatientHistory, ArchivDossier, ArchivDossierHistory]),
-        LoggerModuleGlobale.forRoot('PatientIdentityService')
+        DatabaseModule.forRoot([Patient, PatientHistory, ArchivDossier, ArchivDossierHistory, PatientSimilarityAlert, PatientMergeLog]),
+        LoggerModuleGlobale.forRoot('PatientIdentityService'),
+        ScheduleModule.forRoot()
     ],
 
 

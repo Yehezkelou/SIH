@@ -20,13 +20,29 @@ export class AdmissionDocument {
    
     // url
     @Column({type : "varchar", length : 255, nullable : true})
-    url!: string
+    documentUrl!: string
 
     // champ pour l'admission document
     @Index()
     @Column({type : "enum" , enum : AdmissionDocumentType})
     documentType!: string
 
+    // nom du document 
+    @Index()
+    @Column({type : "varchar", length : 255, nullable : true})
+    documentName!: string
+
+    // extension du document 
+    @Index()
+    @Column({type : "varchar", length : 255, nullable : true})
+    documentExtension!: string
+
+    // taille du document 
+    @Index()
+    @Column({type : "integer", nullable : true})
+    documentSize!: number
+
+    
     @Index()
     @Column({type : "timestamp", nullable : true})
     attachedAt!: Date

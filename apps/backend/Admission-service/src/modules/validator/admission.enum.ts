@@ -82,3 +82,14 @@ export const EncounterStatus = {
     
 } as const 
 
+export const Relationship = {
+    FATHER : "FATHER",
+    MOTHER : "MOTHER",
+    SON : "SON",
+    DAUTHER : "DAUTHER",
+    HUSBAND : "HUSBAND",
+    WIFE : "WIFE",
+    BROTHER : "BROTHER",
+    SISTER : "SISTER",
+    OTHER : "OTHER"
+} as const 

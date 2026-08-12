@@ -28,6 +28,12 @@ export class Encounter {
     @JoinColumn({name : "admissionId"})
     admission!: Admission
 
+    // numero de sejour
+    @Index()
+    @Column({type : "varchar", length : 255, nullable : true})
+    encounterNumber!: string
+
+    // statut de sejour
     @Index()
     @Column({type : "enum", enum : EncounterStatus, default : EncounterStatus.ENCOUNTER_PENDING})
     encounterStatus!: string
@@ -53,6 +59,7 @@ export class Encounter {
     @Column({type : "timestamp", nullable : true})
     startDate!: Date
 
+    // date de fin du sejour
     @Index()
     @Column({type : "timestamp", nullable : true})
     endDate!: Date

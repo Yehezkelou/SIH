@@ -5,6 +5,8 @@ import { AdmissionFilterException } from "../shared/filters/admission.filter";
 import {DatabaseModule} from "../../../../../libs/database/src/index"
 import {LoggerModuleGlobale} from "../../../../../libs/logger/src/index"
 import { Admission, AdmissionCompanion, AdmissionDocument, AdmissionPayer, Encounter, EncounterMovement } from "./entities/index";
+import { AdmissionRepository } from "./repository/admission.repository";
+import { AdmissionService } from "./services/admission.service";
 
 
 
@@ -18,6 +20,12 @@ import { Admission, AdmissionCompanion, AdmissionDocument, AdmissionPayer, Encou
     ],
 
     providers : [
+        // acces donnees admission
+        AdmissionRepository,
+
+        // logique metier / traduction des erreurs
+        AdmissionService,
+
         // validation des donné entrant
          {
             provide : APP_PIPE,

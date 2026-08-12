@@ -12,7 +12,6 @@ const MIMETYPES  = ["application/pdf", "image/jpg", "image/jpeg", "image/png", "
 // racine de stockage des dossiers patient
 const UPLOAD_ROOT = "./upload/patient"
 
-
 export const MulterConfiPatientFile = {
 
     storage : diskStorage({

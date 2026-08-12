@@ -1,5 +1,6 @@
 import { Column, CreateDateColumn, DeleteDateColumn, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { Admission } from "./admission.entity";
+import { Relationship } from "./admission.enum";
 
 
 
@@ -28,8 +29,8 @@ export class AdmissionCompanion {
 
 
     @Index()
-    @Column({type : "varchar", length : 255, nullable : true})
-    relationship!: string
+    @Column({type : "enum", enum : Relationship, nullable : true})
+    relationship!: Relationship
 
     @Index()
     @Column({type : "varchar", length : 255, nullable : true})

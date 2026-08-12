@@ -24,22 +24,27 @@ export class AdmissionPayer {
     @Column({type : "enum", enum : AdmissionPayerType})
     payerType!: string
 
+    // nom du payeur
     @Index()
     @Column({type: "varchar", length : 255, nullable : true})
     name!: string
 
+    // numero de police d'assurance 
     @Index()
     @Column({type: "varchar", length : 255, nullable : true})
     policyNumber!: string
 
+    // pourcentage des frais de sejour
     @Index()
     @Column({type: "numeric", nullable : true})
     coveragePercentage!: number
 
+    // limite de couvertrue des frais de sejour 
     @Index()
     @Column({type: "numeric", nullable : true})
     coverageLimit!: number
 
+    // date d'expiration de la couverture 
     @Index()
     @Column({type: "date", nullable : true})
     validUntil!: Date

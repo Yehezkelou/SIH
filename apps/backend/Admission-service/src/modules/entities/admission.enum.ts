@@ -58,3 +58,15 @@ export enum EncounterStatus{
     ENCOUNTER_TRANSFERED = "ENCOUNTER_TRANSFERED",
     
 }
+
+export enum Relationship {
+    FATHER = "FATHER",
+    MOTHER = "MOTHER",
+    SON = "SON",
+    DAUTHER = "DAUTHER",
+    HUSBAND = "HUSBAND",
+    WIFE = "WIFE",
+    BROTHER = "BROTHER",
+    SISTER = "SISTER",
+    OTHER = "OTHER"
+}

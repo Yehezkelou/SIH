@@ -1,8 +1,6 @@
-import { Column, CreateDateColumn, Entity,  Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Column, CreateDateColumn, DeleteDateColumn, Entity,  Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { MovementType } from "./admission.enum";
 import { Encounter } from "./encounter.entity";
-
-
 
 
 
@@ -68,9 +66,25 @@ export class EncounterMovement {
     encounter!: Encounter
 
 
+    // date audit
     @CreateDateColumn()
     createdAt!: Date
 
+    
     @UpdateDateColumn()
     updatedAt!: Date
+
+    @DeleteDateColumn()
+    deletedAt!: Date
+
+    // utitilisateur audit
+    @Column({length : 255, type : "uuid", nullable : true})
+    updatedBy!: string
+
+    @Column({length : 255, type : "uuid", nullable : true})
+    deletedBy!: string
+
+    @Column({length : 255, type : "uuid", nullable : true})
+    createdBy!: string
+    
 }

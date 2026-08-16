@@ -1,11 +1,30 @@
 import { Body, Controller, Delete, Get, HttpStatus, Post, Put, Query, Res } from "@nestjs/common";
 import { PinoLogger } from "nestjs-pino";
-import { CreatePatientDto, SearchPatientDto, UpdatePatientDto, FindOnePatientDto, SoftDeletePatientDto, CreatePatientProvisoirDto, RegularizationPatientDto, MergePatientDto } from "../dto/patient.dto";
 import type { Response } from "express"
 import { Patient } from "../entities/patient.entity";
 import { PatientService } from "../services/patient.service";
-import { CreateArchivDossierDto } from "../dto/archivDossier.dto";
 import { UsePatientFiles } from "../../../helpers/decorator/PatientFiles.decorator";
+import {
+    type CreateArchivDossierInput,
+    CreateArchivDossierSchema,
+    type CreatePatientInput,
+    type CreatePatientProvisoirInput,
+    CreatePatientProvisoirSchema,
+    CreatePatientSchema,
+    type FindOnePatientInput,
+    FindOnlyPatientSchema,
+    type MergePatientInput,
+    MergePatientSchema,
+    type RegularizationPatientInput,
+    RegularizationPatientSchema,
+    type SearchPatientInput,
+    SearchPatientSchema,
+    type SoftDeleteOnePatientInput,
+    softDeleteOnlyPatientSchema,
+    type UpdatePatientInput,
+    UpdatePatientSchema
+} from "../validator";
+import { UseZodSchema } from "../../../helpers/decorator/zodSchema.decorator";
 
 
 
@@ -21,7 +40,9 @@ export class patientController {
     // create patient definitif
     @Post("create")
     @UsePatientFiles("dossiers")
-    async createPatient(@Body() data: { patient: CreatePatientDto, dossier: CreateArchivDossierDto }, files: Express.Multer.File[], @Res() res: Response) {
+    @UseZodSchema(CreatePatientSchema)
+    @UseZodSchema(CreateArchivDossierSchema)
+    async createPatient(@Body() data: { patient: CreatePatientInput, dossier: CreateArchivDossierInput }, files: Express.Multer.File[], @Res() res: Response) {
 
         const result = await this.service.createPatient(data, files)
 
@@ -43,7 +64,8 @@ export class patientController {
 
     // create patient provisoir 
     @Post("provisoir")
-    async createPatientProvisoir(@Body() data: CreatePatientProvisoirDto, @Res() res: Response) {
+    @UseZodSchema(CreatePatientProvisoirSchema)
+    async createPatientProvisoir(@Body() data: CreatePatientProvisoirInput, @Res() res: Response) {
         const result = await this.service.createPatientProvisoir(data)
 
         this.logger.info({
@@ -60,7 +82,8 @@ export class patientController {
 
     // regulariser patient
     @Put("regularisation")
-    async regularisePatient(@Body() data: RegularizationPatientDto, @Res() res: Response) {
+    @UseZodSchema(RegularizationPatientSchema)
+    async regularisePatient(@Body() data: RegularizationPatientInput, @Res() res: Response) {
         const result = await this.service.regularisePatient(data)
 
         this.logger.info({
@@ -76,8 +99,9 @@ export class patientController {
     }
 
     // update patient 
-    @Put("²update")
-    async updatePatient(@Body() patient: UpdatePatientDto, @Res() res: Response) {
+    @Put("update")
+    @UseZodSchema(UpdatePatientSchema)
+    async updatePatient(@Body() patient: UpdatePatientInput, @Res() res: Response) {
 
         const result = await this.service.updatePatient(patient)
 
@@ -97,7 +121,8 @@ export class patientController {
     }
 
     @Get("search")
-    async searchPatient(@Query() query: SearchPatientDto, @Res() res: Response) {
+    @UseZodSchema(SearchPatientSchema)
+    async searchPatient(@Query() query: SearchPatientInput, @Res() res: Response) {
 
         const result = await this.service.findPatientOrPatients(query)
 
@@ -131,8 +156,9 @@ export class patientController {
         })
     }
 
-    @Get()
-    async getOnlyPatient(@Body() data: FindOnePatientDto, @Res() res: Response) {
+    @Get("only-patient")
+    @UseZodSchema(FindOnlyPatientSchema)
+    async getOnlyPatient(@Body() data: FindOnePatientInput, @Res() res: Response) {
 
         const result = await this.service.findOnePatient(data)
 
@@ -148,8 +174,9 @@ export class patientController {
         })
     }
 
-    @Delete()
-    async deletePatient(@Body() data: SoftDeletePatientDto, @Res() res: Response) {
+    @Delete("delete")
+    @UseZodSchema(softDeleteOnlyPatientSchema)
+    async deletePatient(@Body() data: SoftDeleteOnePatientInput, @Res() res: Response) {
 
         const result = await this.service.softDeletePatient(data)
 
@@ -166,7 +193,8 @@ export class patientController {
     }
 
     @Post("fusion")
-    async fusionPatient(@Body() data : MergePatientDto, @Res() res : Response){
+    @UseZodSchema(MergePatientSchema)
+    async fusionPatient(@Body() data : MergePatientInput, @Res() res : Response){
         const result = await this.service.fusionPatient(data)
 
         this.logger.info({

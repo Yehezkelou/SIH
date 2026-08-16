@@ -4,13 +4,13 @@ import { MulterConfigAdmissionFile } from "../config/multer.config"
 
 
 export const UseAdmissionFiles = (field : string = "dossiers") => {
-    applyDecorators(
+    return applyDecorators(
         UseInterceptors(FilesInterceptor(field, 10, MulterConfigAdmissionFile))
     )
 }
 
 export const UseAdmissionFile = (field : string = "dossier") => {
-    applyDecorators(
+    return applyDecorators(
         UseInterceptors(FileInterceptor(field, MulterConfigAdmissionFile))
     )
 } 

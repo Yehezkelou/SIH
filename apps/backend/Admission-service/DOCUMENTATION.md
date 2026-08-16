@@ -1,3 +1,5 @@
+# Documentation - Admission-service
+
 # Plan d'implémentation — Admission-service
 
 Document vivant listant les fonctionnalités à implémenter dans le
@@ -386,3 +388,296 @@ Une fois §1-8 avancés :
 - `controllers/admission.controller.ts` — nouveau, toutes les routes (§1-7)
 - `shared/filters/admission.filter.ts`, `shared/pipes/admission.pipe.ts` — nouveaux (§9)
 - `app.module.ts` — câblage complet (§0.2, §9)
+
+---
+
+# Revue des entités Admission-service — corrections apportées
+
+Analyse de la question : les entités actuelles (`Admission`, `Encounter`,
+`EncounterMovement`, `AdmissionCompanion`, `AdmissionDocument`,
+`AdmissionPayer`) modélisent-elles correctement un système d'admission
+hospitalière moderne de taille modérée ? Verdict : la base était saine
+(séparation Admission/Encounter, `EncounterMovement` pour la traçabilité
+des déplacements, plusieurs payeurs possibles) mais il manquait des
+éléments considérés comme **standards** dans ce domaine — traçabilité
+médico-légale et identifiant métier lisible. Corrections appliquées
+ci-dessous, avec justification pour chacune.
+
+## 1. Ajout de la suppression douce + audit (`createdBy`/`updatedBy`/`deletedAt`/`deletedBy`)
+
+**Entités concernées :** `Admission`, `Encounter`, `AdmissionCompanion`,
+`AdmissionDocument`, `AdmissionPayer`.
+
+**Pourquoi.** Un dossier d'admission (et tout ce qui s'y rattache :
+accompagnants, documents, payeurs) est une pièce administrative et parfois
+médico-légale. Elle ne doit jamais être supprimée physiquement, et toute
+création/modification/suppression doit être imputable à un utilisateur —
+c'est déjà la règle appliquée à `Patient` et `ArchivDossier` dans
+`Patient-Identity-Service` (`@DeleteDateColumn` + `createdBy`/`updatedBy`/
+`deletedBy`). Sans ça, un `DELETE /admission/companion/:id` (prévu au
+plan frontend/backend) supprimerait l'information sans laisser de trace de
+qui l'a fait ni quand — inacceptable pour un dossier patient.
+
+**Non appliqué à `EncounterMovement`, volontairement.** Un mouvement
+(transfert de lit/service) est un événement de journal, pas un enregistrement
+qu'on modifie ou retire — même logique que `PatientHistory` côté
+Patient-Identity-Service, qui n'a ni suppression douce ni `createdBy`/
+`updatedBy` (l'acteur y est déjà porté par un champ dédié, `changeBy`).
+`EncounterMovement` a son équivalent : `movementBy`. Ajouter un audit
+générique par-dessus aurait été redondant.
+
+## 2. Ajout de `Admission.admissionNumber` (identifiant métier lisible)
+
+**Pourquoi.** Le seul identifiant d'une admission était jusqu'ici l'`id`
+technique (UUID) — imprononçable et inutilisable sur un document papier,
+au téléphone, ou pour recouper un dossier avec la facturation. C'est
+exactement le rôle que joue déjà `Patient.uniquePatientId` côté
+Patient-Identity-Service, et celui que jouait `num_admission` dans
+l'ancien système (référencé par la quasi-totalité des tables satellites du
+cahier des charges legacy : `engagement`, `info_sorties`,
+`mutation_caution`, `delai_attente`...). Sans ce champ, le service aurait
+été moins utilisable en pratique que le système qu'il remplace.
+
+**État :** colonne `unique`, indexée, mais **laissée `nullable` pour
+l'instant** — comme d'autres champs du service (`encounterId` avant
+correction ci-dessous), rien ne la génère encore côté repository. La
+génération (ex. `ADM-2026-XXXXXXXX`, sur le modèle de
+`GeneratedEncouterId()` déjà présent dans
+`helpers/GeneratedUniqueEncounter.ts`) est un travail de repository/service,
+hors scope d'une revue d'entités — à câbler dans `createNewAdmission` en
+même temps que le reste du plan §1.
+
+## 3. Suppression de `Admission.encounterId`
+
+**Pourquoi.** Ce champ (`varchar`, jamais peuplé par le repository) faisait
+doublon avec la relation `OneToOne` désormais correcte entre `Admission` et
+`Encounter` (`Admission.encounters` / `Encounter.admission`, cette dernière
+portant la vraie colonne `admissionId`). Garder les deux aurait entretenu
+une ambiguïté : quelle est la source de vérité du lien Admission ↔
+Encounter ? Un seul mécanisme (la relation) doit exister.
+
+## 4. Défaut explicite sur `Admission.admissionStatus`
+
+**Pourquoi.** `Encounter.encounterStatus` a déjà un défaut
+(`ENCOUNTER_PENDING`) ; `Admission.admissionStatus` n'en avait pas alors
+que la logique métier (`createNewAdmission`) part toujours de `PENDING`.
+Défaut ajouté (`AdmissionStatus.PENDING`) par cohérence et comme filet de
+sécurité si une ligne est un jour insérée sans passer par le repository.
+
+## 5. Renommage `Encounter.currentRoom`/`currentBed` → `currentRoomId`/`currentBedId`
+
+**Pourquoi.** Toutes les autres colonnes de position/référence du service
+sont suffixées `Id` pour signaler explicitement "ceci est une clé
+étrangère, pas l'objet" (`currentDepartmentId`,
+`EncounterMovement.fromRoomId/toRoomId/fromBedId/toBedId`...). Seules
+`currentRoom`/`currentBed` dérogeaient à la convention, ce qui pouvait
+laisser penser à tort qu'il s'agissait de champs texte libres (numéro de
+chambre saisi à la main) plutôt que de références `uuid` vers une autre
+ressource (service Ressources/Bâtiment, hors périmètre actuel). Aucun
+autre fichier du service ne référençait ces deux champs — renommage sans
+impact ailleurs (vérifié par recherche dans tout `src/`).
+
+## Ce qui n'a délibérément **pas** été changé
+
+- **Pas de `serviceId`/`departmentId` séparé sur `Admission`.** La
+  position (service, chambre, lit) est déjà portée par `Encounter`, créé
+  systématiquement en même temps que l'admission. Dupliquer l'information
+  sur `Admission` aurait cassé la séparation des responsabilités déjà en
+  place : `Admission` = pourquoi/qui, `Encounter` = où se trouve le
+  patient maintenant. Ce découpage était déjà correct.
+- **Pas d'ordre de priorité (`isPrimary`) sur `AdmissionPayer`** malgré
+  plusieurs payeurs possibles : utile pour la facturation, mais c'est une
+  règle métier à trancher avec le module Facturation (à venir), pas un
+  défaut de structure de table à corriger maintenant. Noté ici pour
+  mémoire plutôt qu'ajouté sans besoin exprimé.
+- **Pas de type/priorité sur `AdmissionCompanion`** (accompagnant présent
+  vs. simple contact à joindre) : `desc.txt` mélange les deux usages sans
+  trancher — à clarifier avec le métier avant de figer un enum, plutôt que
+  d'en inventer un.
+
+## Vérification
+
+`tsc --noEmit` sur `Admission-service` ne remonte aucune erreur liée aux
+entités après ces changements (seuls les imports inutilisés préexistants
+de `admission.repository.ts`, hors scope, subsistent).
+
+---
+
+# Revue de `createNewAdmission` — bugs trouvés et corrections
+
+Revue de la fonction `createNewAdmission` (`repository/admission.repository.ts`)
+telle qu'écrite avant cette passe. Plusieurs bugs auraient empêché le
+fonctionnement correct dès le premier appel réel, et il n'y avait aucune
+gestion d'erreur exploitable par un futur controller. Détail ci-dessous,
+avec la correction apportée pour chacun.
+
+## Bugs bloquants
+
+### 1. `manager.save(companions/documents/payers)` plantait sur le cas le plus courant
+
+```ts
+const companions = data.companions?.map(...)   // undefined si data.companions absent
+...
+await Promise.all([
+    manager.save(companions),   // manager.save(undefined) !
+    manager.save(documents),
+    manager.save(payers)
+])
+```
+
+`companions`, `documents` et `payers` sont **optionnels** dans le schéma
+Zod (`CreateAdmissionSchema`). Dès qu'une admission est créée sans
+accompagnant — le cas le plus fréquent, ex. une consultation externe seule
+— `data.companions` est `undefined`, donc `data.companions?.map(...)` vaut
+aussi `undefined`, et `manager.save(undefined)` est appelé. TypeORM ne gère
+pas cet appel proprement : la transaction échoue avec une erreur brute non
+gérée, remontée en 500 générique au client (aucun filtre du repo ne
+traduit ce cas). **Toute admission sans accompagnant, document ou payeur
+échouait.**
+
+**Correction :** `(data.companions ?? []).map(...)` (idem documents/payers)
+— `manager.save([])` est un no-op valide.
+
+### 2. La vérification "patient déjà admis" bloquait le retour d'un patient déjà sorti
+
+```ts
+admissionStatus : In([
+    AdmissionStatus.PENDING, AdmissionStatus.ADMITTED, AdmissionStatus.CANCELLED,
+    AdmissionStatus.DISCHARGED, AdmissionStatus.PRE_ADMITTED, AdmissionStatus.REGISTERED,
+    AdmissionStatus.TRANSFERED, AdmissionStatus.DISCHARGED_PENDING,
+])
+```
+
+Cette liste couvrait quasiment tous les statuts existants, y compris
+`CANCELLED` et `DISCHARGED` — des statuts **terminaux**. Résultat : un
+patient qui a déjà été hospitalisé une fois (et donc sorti,
+`DISCHARGED`) ne pouvait plus jamais être ré-admis, puisque
+`createNewAdmission` trouvait toujours son ancienne admission "terminée"
+et la traitait comme un conflit actif. Un hôpital où les patients ne
+peuvent revenir qu'une seule fois dans leur vie n'est pas un système
+fonctionnel.
+
+**Correction :** liste réduite aux statuts réellement "actifs"
+(`PENDING`, `PRE_ADMITTED`, `REGISTERED`, `ADMITTED`, `TRANSFERED`,
+`DISCHARGED_PENDING`), extraite en constante `ACTIVE_ADMISSION_STATUSES`
+pour éviter qu'elle diverge silencieusement d'une future méthode qui en
+aurait besoin.
+
+### 3. `admissionType` obligatoire en base, optionnel côté validation
+
+L'entité `Admission.admissionType` est `nullable: false`, mais
+`CreateAdmissionSchema` le déclarait `.optional()`. Une requête sans
+`admissionType` passait la validation Zod (donc le pipe global la laissait
+passer), puis échouait à l'insertion SQL avec une violation `NOT NULL` —
+une erreur Postgres brute renvoyée au client plutôt qu'un message de
+validation clair à 400.
+
+**Correction :** `admissionType` rendu obligatoire dans
+`CreateAdmissionSchema`, avec message d'erreur dédié
+(`"Le type d'admission est requis"`), pour que l'erreur soit détectée
+*avant* la base de données, avec un message exploitable.
+
+### 4. `payers` incohérent par rapport à `companions`/`documents`
+
+```ts
+payers : z.array(z.object({...}).optional()),
+```
+
+Ici c'est l'**élément** du tableau qui était optionnel (un payeur peut être
+`undefined` au milieu du tableau — non-sens), et le tableau lui-même **ne
+l'était pas** : omettre complètement `payers` dans la requête faisait
+échouer la validation ("expected array, received undefined"), alors que
+`companions`/`documents` pouvaient être omis sans problème.
+
+**Correction :** `.optional()` déplacé sur le tableau entier, retiré de
+l'élément — cohérent avec `companions`/`documents`.
+
+## Bugs silencieux (pas de crash, mais mauvais comportement)
+
+### 5. `reason` (motif d'admission) jamais enregistré
+
+`data.admission.reason` était validé par Zod mais jamais passé à
+`manager.create(Admission, {...})` — l'information saisie par le personnel
+était silencieusement perdue. Ajouté à l'insertion.
+
+### 6. `admissionDate` pouvait rester `null` sans raison
+
+Champ `.optional()` côté validation, et rien ne le complétait côté
+serveur si absent — une admission pouvait n'avoir aucune date de début,
+ce qui casse tout tri/filtrage ultérieur par date. Corrigé :
+`admissionDate: data.admission.admissionDate ?? new Date()`.
+
+### 7. `admissionNumber` fourni par le client, jamais vérifié
+
+Le schéma exigeait `admissionNumber` du client, sans aucune vérification
+d'unicité avant insertion (la seule protection étant la contrainte
+`unique` en base, qui aurait renvoyé une erreur Postgres brute en cas de
+collision). C'est aussi incohérent avec le seul autre identifiant métier
+du système : `Patient.uniquePatientId`, que le client ne fournit jamais —
+il est **généré côté serveur** par `patient.repository.ts` (boucle de
+génération + vérification d'unicité, jusqu'à 5 tentatives).
+
+**Correction :** `admissionNumber` retiré du payload client. Génération
+serveur via un nouveau `GeneratedAdmissionNumber()`
+(`helpers/UniqueNumero.ts`, renommé de l'ancien `GeneratedEncouterId` —
+son nom ne correspondait pas à ce qu'il produisait), avec la même boucle
+de vérification d'unicité que côté patient (5 tentatives). Même
+traitement pour `Encounter.encounterNumber`, qui était accepté du client
+sans jamais être vérifié : maintenant généré côté serveur via
+`GeneratedEncounterNumber()` (pas de boucle d'unicité ici, la collision
+n'aurait pas de conséquence bloquante identifiée pour un simple numéro de
+séjour — à réévaluer si un jour ce numéro sert de clé d'accès externe).
+
+### 8. Forme de retour incohérente entre le cas "conflit" et le cas "succès"
+
+Avant : `{ exist: true, admission }` (conflit) vs.
+`{ id, patientId, admission: { admission, companions, documents, payers } }`
+(succès) — la clé `admission` désignait tantôt l'entité, tantôt un objet 
+englobant tout. Un futur controller n'aurait pas pu discriminer proprement
+les deux cas sans connaître ce détail par cœur.
+
+**Correction :** retour aplati et discriminé par `exist` :
+`{ exist: true, admission }` vs.
+`{ exist: false, admission, companions, documents, payers, encounter }`
+— même convention que `patient.repository.ts` (`"exist" in patientCreated`).
+
+## Absence totale de gestion d'erreur HTTP
+
+Le repository ne levait plus aucune `HttpException` (une version
+antérieure le faisait directement dans le repository ; cette logique avait
+disparu sans être déplacée ailleurs). Un futur appelant recevait un objet
+`{ exist: true, ... }` en cas de conflit — à charge pour lui de deviner
+qu'il fallait le transformer en réponse d'erreur.
+
+**Correction, alignée sur la convention `Patient-Identity-Service`**
+(repository = données + retours discriminés, service = traduction en
+`HttpException`) :
+
+- `helpers/messageError.ts` (nouveau) : messages centralisés
+  `ADMISSION_PATIENT_ALREADY_ACTIVE` (409) et
+  `ADMISSION_NUMBER_GENERATION_FAILED` (409, cas extrême où 5 tentatives de
+  génération collisionnent toutes).
+- `services/admission.service.ts` (nouveau) : `AdmissionService.createNewAdmission`
+  appelle le repository et lève l'`HttpException` correspondante selon le
+  discriminant du retour, sinon renvoie le résultat.
+- `repository/admission.repository.ts` : la classe s'appelait `AdmissionService`
+  alors que le fichier est `admission.repository.ts` et qu'elle hérite de
+  `Repository<Admission>` — collision de nom directe avec le vrai service
+  business qu'il fallait créer. **Renommée `AdmissionRepository`.**
+- Les deux sont enregistrés comme `providers` dans `app.module.ts` (ils ne
+  l'étaient pas du tout auparavant — aucune injection de dépendance
+  n'aurait fonctionné).
+
+## Non modifié, à trancher plus tard
+
+- Toujours pas de vérification que `patientId` existe réellement côté
+  `Patient-Identity-Service` (appel inter-service ou confiance au
+  payload) — déjà noté dans `PLAN_FONCTIONNALITES_ADMISSION.md` §1.3,
+  toujours vrai.
+- La condition "encounter créé seulement si `ADMITTED`/`REGISTERED`" a été
+  conservée telle quelle : elle a du sens métier (pas de séjour actif à
+  positionner tant que le patient n'est pas physiquement pris en charge),
+  mais implique qu'il faudra une méthode dédiée plus tard pour créer
+  l'`Encounter` a posteriori quand une admission `PENDING`/`PRE_ADMITTED`
+  passe à `ADMITTED`/`REGISTERED` — cette méthode n'existe pas encore
+  (`findAdmission` est toujours un stub vide).

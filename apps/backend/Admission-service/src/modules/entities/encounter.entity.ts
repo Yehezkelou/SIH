@@ -18,6 +18,11 @@ export class Encounter {
     @Column({type : "uuid" , nullable : true})
     patientId!: string
 
+    // reference numero patient 
+    @Index()
+    @Column({type : "string"})
+    numeroPatient!: string
+
     // reference vers l'admission
     @Index()
     @Column({type : "uuid", nullable : true})
@@ -78,11 +83,11 @@ export class Encounter {
     updatedAt!: Date
 
     // Utilisateur/compte a l'origine de la creation de l'encounter
-    @Column({length : 255, type : "varchar", nullable : true})
+    @Column({length : 255, type : "uuid", nullable : true})
     createdBy?: string
 
     // Utilisateur/compte a l'origine de la derniere modification
-    @Column({length : 255, type : "varchar", nullable : true})
+    @Column({length : 255, type : "uuid", nullable : true})
     updatedBy?: string
 
     // Suppression douce : un sejour n'est jamais supprime physiquement
@@ -90,7 +95,7 @@ export class Encounter {
     deletedAt?: Date
 
     // Utilisateur/compte a l'origine de la suppression
-    @Column({length : 255, type : "varchar", nullable : true})
+    @Column({length : 255, type : "uuid", nullable : true})
     deletedBy?: string
 
 }

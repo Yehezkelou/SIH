@@ -1,9 +1,18 @@
 import { Body, Controller, Delete, Get, HttpStatus, Put, Query, Res, UploadedFile } from "@nestjs/common";
 import { ArchivDossierService } from "../services/archivDossier.service";
 import { UsePatientFile } from "../../../helpers/decorator/PatientFiles.decorator";
-import { DeleteDossierDto, FindOnlyDossierDto, ReplaceDossierDto } from "../dto/archivDossier.dto";
 import { PinoLogger } from "nestjs-pino";
 import type { Response } from "express";
+import { UseZodSchema } from "../../../helpers/decorator/zodSchema.decorator";
+import {
+    type DeleteDossierInput,
+    deleteDossierSchema,
+     type FindOnlyDossierInput,
+     findOnlyDossierSchema,
+     type ReplaceDossierInput, 
+     replaceDossierSchema 
+
+    } from "../validator";
 
 
 @Controller('dossier')
@@ -14,10 +23,11 @@ export class ArchivDossierController {
     ){}
     
 
-    @UsePatientFile('dossier')
     @Put()
+    @UsePatientFile('dossier')
+    @UseZodSchema(replaceDossierSchema)
     async replaceDossier(
-        @Body() body : ReplaceDossierDto,
+        @Body() body : ReplaceDossierInput,
         @UploadedFile() file : Express.Multer.File,
         @Res() res : Response
     ){
@@ -39,8 +49,9 @@ export class ArchivDossierController {
 
 
     @Delete()
+    @UseZodSchema(deleteDossierSchema)
     async softDeleteDossier(
-        @Body() body : DeleteDossierDto,
+        @Body() body : DeleteDossierInput,
         @Res() res : Response
     ){
         const result = await this.archivDossierService.softDeleteDossier(body)
@@ -60,8 +71,9 @@ export class ArchivDossierController {
     }
 
     @Get()
+    @UseZodSchema(findOnlyDossierSchema)
     async findOnlyDossier(
-        @Query() query : FindOnlyDossierDto,
+        @Query() query : FindOnlyDossierInput,
         @Res() res : Response
     ){
         const result = await this.archivDossierService.findOnlyDossier(query)

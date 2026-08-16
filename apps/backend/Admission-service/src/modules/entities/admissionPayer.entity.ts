@@ -60,17 +60,17 @@ export class AdmissionPayer {
     @UpdateDateColumn()
     updatedAt!: Date
 
-    @Column({length : 255, type : "varchar", nullable : true})
+    @Column({length : 255, type : "uuid", nullable : true})
     createdBy?: string
 
-    @Column({length : 255, type : "varchar", nullable : true})
+    @Column({length : 255, type : "uuid", nullable : true})
     updatedBy?: string
 
     // Suppression douce : conserve la trace d'un payeur retire (piece comptable)
     @DeleteDateColumn()
     deletedAt?: Date
 
-    @Column({length : 255, type : "varchar", nullable : true})
+    @Column({length : 255, type : "uuid", nullable : true})
     deletedBy?: string
 
 }

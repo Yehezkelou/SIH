@@ -69,15 +69,32 @@ export const MovementType = {
 
 // cela concerne le status de l'encounter 
 export const EncounterStatus = {
+
+    // le dossier est en attente du medecin
     ENCOUNTER_PENDING : "ENCOUNTER_PENDING",
+
+    // le patient est dans son lit
     ENCOUNTER_ADMITTED : "ENCOUNTER_ADMITTED",
+
+    // le patient a quitté l'hopitale 
     ENCOUNTER_DISCHARGED : "ENCOUNTER_DISCHARGED",
+
+    //le sejour a été annulé
     ENCOUNTER_CANCELLED : "ENCOUNTER_CANCELLED",
+
+    // le patient a réservé son entré 
     ENCOUNTER_PRE_ADMITTED : "ENCOUNTER_PRE_ADMITTED",
+
+    // le patient est présent a l'accueil de l'hopitale
     ENCOUNTER_REGISTERED : "ENCOUNTER_REGISTERED",
-    ENCOUNTER_WAIT_FOR_CAR : "ENCOUNTER_WAIT_FOR_CAR",
+
+    // le dossier est definitivement verrouillé
     ENCOUNTER_CLOSED : "ENCOUNTER_CLOSED",
+
+    // le medecin a donné son accord medical de sortie mais le patient est toujour la
     ENCOUNTER_DISCHARGED_PENDING : "ENCOUNTER_DISCHARGED_PENDING", 
+
+    // le patient a été transféré dans un autre service    
     ENCOUNTER_TRANSFERED : "ENCOUNTER_TRANSFERED",
     
 } as const 

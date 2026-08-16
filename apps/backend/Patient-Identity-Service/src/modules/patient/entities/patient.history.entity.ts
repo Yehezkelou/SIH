@@ -1,16 +1,7 @@
 import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn } from "typeorm";
 
 
-/**
- * Entité PatientHistory (journal des modifications d'un dossier patient)
- *
- * Chaque fois qu'un dossier Patient est créé, modifié ou supprimé, une
- * "photo" avant/après est enregistrée ici. C'est la piste d'audit qui
- * permet de savoir qui a changé quoi, quand, et de revenir en arrière
- * si besoin (traçabilité obligatoire sur des données de santé).
- *
- * Alimentée automatiquement par PatientSubscriber, pas par le code métier.
- */
+
 @Entity()
 export class PatientHistory {
 

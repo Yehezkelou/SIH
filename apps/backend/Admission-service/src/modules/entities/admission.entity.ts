@@ -20,6 +20,12 @@ export class Admission {
     @Column({type : "uuid"})
     patientId!: string
 
+    // reference numero du patient 
+    @Index()
+    @Column({type : "string"})
+    numeroPatient!: string
+
+
     // numero d'admission lisible (equivalent de Patient.uniquePatientId),
     // utilise par le personnel pour reference papier/telephonique/facturation
     @Index()
@@ -65,11 +71,11 @@ export class Admission {
     updatedAt!: Date
 
     // Utilisateur/compte a l'origine de la creation de l'admission
-    @Column({length : 255, type : "varchar", nullable : true})
+    @Column({length : 255, type : "uuid", nullable : true})
     createdBy?: string
 
     // Utilisateur/compte a l'origine de la derniere modification
-    @Column({length : 255, type : "varchar", nullable : true})
+    @Column({length : 255, type : "uuid", nullable : true})
     updatedBy?: string
 
     // Suppression douce : un dossier d'admission n'est jamais supprime
@@ -78,7 +84,7 @@ export class Admission {
     deletedAt?: Date
 
     // Utilisateur/compte a l'origine de la suppression
-    @Column({length : 255, type : "varchar", nullable : true})
+    @Column({length : 255, type : "uuid", nullable : true})
     deletedBy?: string
 
     // Relation au sein du meme microservice

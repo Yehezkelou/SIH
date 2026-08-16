@@ -8,6 +8,8 @@ export const CreateAdmissionSchema = z.object({
 
      // reference vers le patient
     patientId : z.uuid("Identifiant du patient est requis"),
+    numeroPatient : z.string("le numero du patient est requis"),
+
 
     // admission
     admission : z.object({
@@ -96,8 +98,59 @@ export const admissionQuerySchema = z.object({
     // 
 })
 
+// Extraction et extension dynamique des objets pour la mise à jour
+const companionUpdateSchema = CreateAdmissionSchema.shape.companions
+    .unwrap()
+    .element
+    .partial()
+    .extend({
+        id : z.uuid("identifiant du companion est requis")
+    });
+
+const documentUpdateSchema = CreateAdmissionSchema.shape.documents
+    .unwrap()
+    .element
+    .partial()
+    .extend({
+        id : z.uuid("identifiant du document est requis")
+    });
+
+const payerUpdateSchema = CreateAdmissionSchema.shape.payers
+    .unwrap()
+    .element
+    .partial()
+    .extend({
+        id : z.uuid("identifiant du payer est requis")
+    });
+
+const encounterUpdateSchema = CreateAdmissionSchema.shape.encouter
+    .unwrap()
+    .partial()
+    .extend({
+        id : z.uuid("identifiant de l'encouter est requis")
+    });
+
 export const UpdateAdmissionSchema = CreateAdmissionSchema.partial().omit({
-    patientId : true
+    createdBy : true
+}).extend({
+    admissionId : z.uuid("l'identifiant de l'admission est requis"),
+    admissionNumber: z.string("le numero de l'admission est requis"),
+
+
+    // companions
+    companions : z.array(companionUpdateSchema).optional(),
+
+    // documents
+    documents : z.array(documentUpdateSchema).optional(),
+
+    // payerIds id 
+    payers : z.array(payerUpdateSchema).optional(),
+
+    // encouterIds id 
+    encouter : z.array(encounterUpdateSchema).optional(),
+
+    // utilisateur
+    updatedBy : z.uuid("Identifiant de l'utilisateur est requis")
 })
 
 

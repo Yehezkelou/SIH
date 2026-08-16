@@ -19,6 +19,9 @@ type T_MESSAGE_ERROR_ARCHIDOC =
     | "DOCUMENT_FOR_DELETION_ERROR" 
     | "MOVE_ERROR" 
 
+type T_MESSAGE_ERROR_INTERNAL = 
+    | "PATIENT_NOT_FOUND_IN_INTERNAL" 
+    | "PATIENT_ALREADY_EXIST_IN_INTERNAL"
 
 
 // les messages d'erreur pour les patients
@@ -79,6 +82,20 @@ export const MESSAGE_ERROR : Record<T_MESSAGE_ERROR_PATIENT, {MESSAGE : string, 
         CODE : "PATIENT_ALREADY_MERGED"
     }
 
+}
+
+
+// message d'erreur pour les erreur internal 
+export const MESSAGE_INTERNAL_ERROR : Record<T_MESSAGE_ERROR_INTERNAL, {MESSAGE : string, CODE : string}> = {
+    PATIENT_NOT_FOUND_IN_INTERNAL : {
+        MESSAGE : "le patient n'a pas été trouvé dans la base interne.",
+        CODE : "PATIENT_NOT_FOUND_IN_INTERNAL"
+    },
+    
+    PATIENT_ALREADY_EXIST_IN_INTERNAL : {
+        MESSAGE : "le patient existe deja dans la base interne.",
+        CODE : "PATIENT_ALREADY_EXIST_IN_INTERNAL"
+    }
 }
 
 // les messages d'erreur pour les dossiers

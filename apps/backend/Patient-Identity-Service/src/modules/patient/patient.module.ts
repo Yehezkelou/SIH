@@ -14,7 +14,7 @@ import { ArchivDossierSubscriber } from "./entities/archivDossier.subscriber";
 import { ScheduleModule } from "@nestjs/schedule";
 import { PatientSimilarityAlert } from "./entities/patientSimilarityAlert.entity";
 import { PatientMergeLog } from "./entities/patientMergeLog.entity";
-import { ArchivDossierController, PatientInternalController, patientController } from "./controllers";
+import { ArchivDossierController, PatientInternalController, patientController, PatientGrpcController } from "./controllers";
 import { ArchivDossierRepository } from "./repositories";
 import { ArchivDossierService, PatientInternalService, PatientService } from "./services";
 
@@ -27,8 +27,7 @@ import { ArchivDossierService, PatientInternalService, PatientService } from "./
     ],
 
 
-
-    controllers: [patientController, PatientInternalController, ArchivDossierController],
+    controllers: [patientController, PatientInternalController, PatientGrpcController, ArchivDossierController],
     providers: [
 
         // gerer les repository patient
@@ -61,8 +60,6 @@ import { ArchivDossierService, PatientInternalService, PatientService } from "./
         }
     ]
 })
-
-
-export class PatientModule { }
+export class PatientModule {}
 
 

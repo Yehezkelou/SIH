@@ -5,8 +5,6 @@ import { DataSource, EntityManager, Repository } from "typeorm";
 
 
 
-
-
 @Injectable()
 export class EncounterRepository extends Repository<Encounter>{
 
@@ -76,6 +74,6 @@ export class EncounterRepository extends Repository<Encounter>{
             currentRoomId : position.currentRomId,
             updatedBy : updateBy
         })
-     }
+    }
     
 }

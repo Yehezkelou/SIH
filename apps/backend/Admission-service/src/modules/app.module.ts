@@ -12,6 +12,15 @@ import { CompanionRepository } from "./repository/companions.repository";
 import { PayersRepository } from "./repository/payer.repository";
 import { DocumentRepository } from "./repository/documents.repository";
 import { AdmissionService } from "./services/admission.service";
+import { EncounterMovementService } from "./services/encounterMovement.service";
+import { CompanionService } from "./services/companion.service";
+import { DocumentService } from "./services/document.service";
+import { PayersService } from "./services/payer.service";
+import { AdmissionController } from "./controllers/admission.controller";
+import { EncounterMovementController } from "./controllers/encounterMovement.controller";
+import { CompanionController } from "./controllers/companions.controller";
+import { DocumentController } from "./controllers/documents.controller";
+import { PayersController } from "./controllers/payers.controller";
 import { IntegrationModule } from "./integrations/integration.module";
 
 
@@ -27,7 +36,15 @@ import { IntegrationModule } from "./integrations/integration.module";
             AdmissionHistory
         ]),
         LoggerModuleGlobale.forRoot("AdmissionService"),
-        IntegrationModule
+        IntegrationModule,
+    ],
+
+    controllers: [
+        AdmissionController,
+        EncounterMovementController,
+        CompanionController,
+        DocumentController,
+        PayersController,
     ],
 
     providers: [
@@ -45,6 +62,10 @@ import { IntegrationModule } from "./integrations/integration.module";
 
         // logique metier / traduction des erreurs
         AdmissionService,
+        EncounterMovementService,
+        CompanionService,
+        DocumentService,
+        PayersService,
 
         // validation des donné entrant
         {

@@ -306,6 +306,19 @@ export const softDeleteAdmissionSchema = z.object({
     deletedBy: z.uuid("L'identifiant de l'utilisateur ayant supprimé est requis"),
 });
 
+export const dischargePatientSchema = z.object({
+    admissionId: z.uuid("L'identifiant de l'admission est requis"),
+    numeroAdmission: z.string("Le numéro d'admission est requis"),
+    patientId: z.uuid().optional(),
+    numeroPatient: z.string().optional(),
+    encounterId: z.uuid().optional(),
+    encounterNumber: z.string().optional(),
+    reason: z.string().optional(),
+    dischargedBy: z.uuid("L'identifiant de l'utilisateur effectuant la sortie est requis"),
+});
+
+export const DischargePatientSchema = dischargePatientSchema;
+
 export const CancelAdmissionSchema = cancelAdmissionSchema;
 export const SoftDeleteAdmissionSchema = softDeleteAdmissionSchema;
 
@@ -324,6 +337,8 @@ export type CreateMovementInput = z.infer<typeof createMovementSchema>;
 export type FindMovementsByEncounterInput = z.infer<typeof findMovementsByEncounterSchema>;
 export type CancelAdmissionInput = z.infer<typeof cancelAdmissionSchema>;
 export type SoftDeleteAdmissionInput = z.infer<typeof softDeleteAdmissionSchema>;
+export type DischargePatientInput = z.infer<typeof dischargePatientSchema>;
+
 
 
 

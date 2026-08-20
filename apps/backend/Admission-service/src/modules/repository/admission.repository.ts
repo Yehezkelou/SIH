@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { Between, DataSource, EntityManager, FindOptionsWhere, ILike, In, LessThanOrEqual, MoreThanOrEqual, Repository } from "typeorm";
 import { Admission } from "../entities/admission.entity";
-import {CreateAdmissionInput, AdmissionStatus, EncounterStatus, UpdateAdmissionInput, findAdmissionByIdInput, findActiveAdmissionByPatientInput, AdmissionQueryInput, UpdateAdmissionStatusInput, CreateMovementInput, CancelAdmissionInput, SoftDeleteAdmissionInput} from "../validator/index"
+import {CreateAdmissionInput, AdmissionStatus, EncounterStatus, UpdateAdmissionInput, findAdmissionByIdInput, findActiveAdmissionByPatientInput, AdmissionQueryInput, UpdateAdmissionStatusInput, CreateMovementInput, CancelAdmissionInput, SoftDeleteAdmissionInput, DischargePatientInput} from "../validator/index"
 import { AdmissionCompanion, AdmissionDocument, AdmissionPayer, Encounter,  MovementType, Relationship } from "../entities";
 import { GeneratedAdmissionNumber, GeneratedEncounterNumber } from "../../helpers/UniqueNumero";
 import { DocumentRepository } from "./documents.repository";
@@ -513,7 +513,7 @@ export class AdmissionRepository extends Repository<Admission>{
         const updatedAdmission = await this.save(admission);
 
         return {
-            exist: true as const,
+            existAdmission: true as const,
             invalidTransition: false as const,
             admission: updatedAdmission,
         };
@@ -679,9 +679,102 @@ export class AdmissionRepository extends Repository<Admission>{
         };
     }
 
+    // Sortie du patient 
+    async dischargePatient(data: DischargePatientInput) {
+        return await this.dataSource.transaction(async (manager) => {
+            const now = new Date();
 
-    // 
+            // 1. Récupération de l'admission avec son séjour (Encounter)
+            const admission = await manager.findOne(Admission, {
+                where: {
+                    id: data.admissionId,
+                    admissionNumber: data.numeroAdmission,
+                    patientId: data.patientId || undefined,
+                    numeroPatient: data.numeroPatient || undefined,
+                },
+                relations: {
+                    encounters: true,
+                    companions: true,
+                    documents: true,
+                    payers: true,
+                },
+            });
+
+            if (!admission) {
+                return {
+                    existAdmission: false as const,
+                    locked: false as const,
+                    admission: null,
+                };
+            }
+
+            // 2. Vérifier que l'admission est active (In(ACTIVE_ADMISSION_STATUSES))
+            const isActive = ACTIVE_ADMISSION_STATUSES.includes(admission.admissionStatus as any);
+            if (!isActive) {
+                return {
+                    existAdmission: true as const,
+                    locked: true as const,
+                    currentStatus: admission.admissionStatus,
+                    admission: null,
+                };
+            }
+
+            // 3. Mise à jour de l'Admission
+            admission.actualDischarge = now;
+            admission.admissionStatus = AdmissionStatus.DISCHARGED;
+            admission.updatedBy = data.dischargedBy;
+            await manager.save(Admission, admission);
+
+            // 4. Mise à jour du Séjour (Encounter) et création du dernier mouvement de type DISCHARGE
+            if (admission.encounters) {
+                const encounter = admission.encounters;
+                encounter.endDate = now;
+                encounter.encounterStatus = EncounterStatus.ENCOUNTER_DISCHARGED;
+                encounter.updatedBy = data.dischargedBy;
+
+                // Création du mouvement d'historique DISCHARGE
+                await this.encounterMovement.createMovement({
+                    encounterId: encounter.id,
+                    encounterNumber: encounter.encounterNumber,
+                    movementType: MovementType.DISCHARGE,
+                    fromDepartmentId: encounter.currentDepartmentId,
+                    fromRoomId: encounter.currentRoomId,
+                    fromBedId: encounter.currentBedId,
+                    toDepartmentId: undefined,
+                    toRoomId: undefined,
+                    toBedId: undefined,
+                    reason: data.reason,
+                    movementBy: data.dischargedBy,
+                }, manager);
+
+                // Libération de l'emplacement courant du patient
+                await this.encounter.updatePosition(
+                    encounter.id,
+                    encounter.encounterNumber,
+                    admission.id,
+                    admission.patientId,
+                    data.dischargedBy,
+                    {
+                        currentDepartementId: undefined,
+                        currentBedId: undefined,
+                        currentRomId: undefined,
+                    },
+                    manager
+                );
+
+                await manager.save(Encounter, encounter);
+            }
+
+            return {
+                existAdmission: true as const,
+                locked: false as const,
+                admission,
+            };
+        });
+    }
+
 }
+
 
 
 

@@ -1,10 +1,11 @@
 import {HttpException, HttpStatus, Injectable } from "@nestjs/common";
 import { DataSource, EntityManager, In, Repository } from "typeorm";
-import { AdmissionDocument } from "../entities";
-import { UpdateAdmissionInput, documentCreateInput } from "../validator";
+import { AdmissionDocument, AdmissionDocumentType } from "../entities";
+import { UpdateAdmissionInput, documentCreateInput, AddDocumentInput, RemoveDocumentInput, FindDocumentsByAdmissionInput } from "../validator";
 import * as fs from "fs";
 import path from "path";
 import { PinoLogger } from "nestjs-pino";
+import { MESSAGE_ERROR } from "../../helpers/messageError";
 
 
 
@@ -183,7 +184,92 @@ export class DocumentRepository extends Repository<AdmissionDocument>{
             ...(savedDocuments.length > 0 ? { savedDocuments } : {})
         }
     }
+
+    // 1. Ajout d'un document (POST /admission/:id/document avec upload Multer)
+    async addSingleDocument(data: AddDocumentInput, file: Express.Multer.File, manager?: EntityManager) {
+        const repo = manager ? manager.getRepository(AdmissionDocument) : this;
+
+        const doc = repo.create({
+            admissionId: data.admissionId,
+            documentName: data.documentName || file.originalname,
+            documentUrl: file.path,
+            documentSize: file.size,
+            documentExtension: file.mimetype,
+            documentType: data.documentType as AdmissionDocumentType,
+            createdBy: data.createdBy,
+        });
+
+        const savedDoc = await repo.save(doc);
+        return savedDoc;
+    }
+
+    // 2. Suppression douce d'un document (DELETE /admission/document/:documentId)
+    async removeSingleDocument(data: RemoveDocumentInput, manager?: EntityManager) {
+        const repo = manager ? manager.getRepository(AdmissionDocument) : this;
+
+        const doc = await repo.findOne({
+            where: {
+                id: data.documentId,
+                admissionId: data.admissionId,
+            },
+        });
+
+        if (!doc) {
+            return {
+                existDocument: false as const,
+            };
+        }
+
+        // Déplacement physique du fichier vers le dossier de suppression s'il existe sur le disque
+        if (doc.documentUrl && fs.existsSync(doc.documentUrl)) {
+            const deleteDirectory = `./upload/admission/deleted/${Date.now()}-${Math.round(Math.random() * 1e9)}`;
+
+            if (!fs.existsSync(deleteDirectory)) {
+                await fs.promises.mkdir(deleteDirectory, { recursive: true });
+            }
+
+            const filename = path.basename(doc.documentUrl);
+            const newPath = path.join(deleteDirectory, filename);
+
+            try {
+                await fs.promises.rename(doc.documentUrl, newPath);
+                doc.documentUrl = newPath;
+            } catch (error) {
+                this.logger.error({
+                    message: "ERREUR LORS DU DEPLACEMENT DU FICHIER SUPPRIME",
+                    detail: error,
+                    context: "DocumentRepository:removeSingleDocument",
+                });
+                throw new HttpException({
+                    statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+                    message: MESSAGE_ERROR.DOCUMENT_MOVE_FAILED.MESSAGE,
+                    code: MESSAGE_ERROR.DOCUMENT_MOVE_FAILED.CODE,
+                }, HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+        }
+
+        doc.deletedBy = data.deletedBy;
+        await repo.save(doc);
+        await repo.softRemove(doc);
+
+        return {
+            existDocument: true as const,
+        };
+    }
+
+    // 3. Recherche des documents d'une admission (GET /admission/:id/document)
+    async findDocumentsByAdmission(data: FindDocumentsByAdmissionInput) {
+        return await this.find({
+            where: {
+                admissionId: data.admissionId,
+            },
+            order: {
+                createdAt: "DESC",
+            },
+        });
+    }
 }
+
 
     
 

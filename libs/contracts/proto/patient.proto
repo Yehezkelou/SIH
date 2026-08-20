@@ -1,0 +1,41 @@
+syntax = "proto3";
+
+package patient;
+
+/**
+ * Service gRPC interne de gestion et de vérification d'identité des patients (MPI).
+ * Utilisé pour les échanges haute performance inter-services 
+ */
+service PatientInternal {
+  /**
+   * Vérifie l'existence d'un patient et retourne son profil partagé minimal.
+   */
+  rpc VerifyPatient (VerifyPatientRequest) returns (VerifyPatientResponse);
+}
+
+/**
+ * Message de requête pour la vérification d'un patient.
+ */
+message VerifyPatientRequest {
+  string patientId = 1;       // Identifiant unique UUID v4 du patient
+  string numeroPatient = 2;    // Numéro d'identification unique du dossier patient 
+}
+
+/**
+ * Message de réponse retourné suite à la vérification d'un patient.
+ */
+message VerifyPatientResponse {
+  bool found = 1;             // Indicateur de présence (true si trouvé, false si introuvable)
+  Patient patient = 2;        // Données du patient partagées (défini uniquement si found = true)
+}
+
+/**
+ * Modèle de données représentatif du dossier patient partagé entre les microservices.
+ */
+message Patient {
+  string id = 1;              // Identifiant unique UUID v4 du patient
+  string numeroPatient = 2;    // Numéro d'identification unique du dossier patient
+  string nom = 3;             // Nom de famille du patient
+  string prenom = 4;          // Prénom du patient
+  string statusDossier = 5;   // Statut légal du dossier médical ("DEFINITIF" ou "PROVISOIRE")
+}

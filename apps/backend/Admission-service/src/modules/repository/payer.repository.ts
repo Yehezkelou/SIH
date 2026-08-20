@@ -1,7 +1,7 @@
 import { Inject, Injectable } from "@nestjs/common";
 import { DataSource, EntityManager, In, Repository } from "typeorm";
-import { AdmissionPayer } from "../entities";
-import { UpdateAdmissionInput, payerCreateInput } from "../validator";
+import { AdmissionPayer, AdmissionPayerType } from "../entities";
+import { UpdateAdmissionInput, payerCreateInput, AddPayerInput, UpdatePayerInput, RemovePayerInput, FindPayersByAdmissionInput } from "../validator";
 
 
 
@@ -143,5 +143,98 @@ export class PayersRepository extends Repository<AdmissionPayer>{
             ...(existingPayers.length > 0 ? { existingPayers } : {}),
             ...(savedPayers.length > 0 ? { savedPayers } : {})
         }
+    }
+
+    // 1. Ajout d'un payeur 
+    async addSinglePayer(data: AddPayerInput, manager?: EntityManager) {
+        const repo = manager ? manager.getRepository(AdmissionPayer) : this;
+
+        const payer = repo.create({
+            admissionId: data.admissionId,
+            name: data.name,
+            payerType: data.payerType as AdmissionPayerType,
+            policyNumber: data.policyNumber,
+            coveragePercentage: data.coveragePercentage,
+            coverageLimit: data.coverageLimit,
+            validUntil: new Date(data.validUntil),
+            createdBy: data.createdBy,
+        });
+
+        const savedPayer = await repo.save(payer);
+        return savedPayer;
+    }
+
+    // 2. Modification d'un payeur 
+    async updateSinglePayer(data: UpdatePayerInput, manager?: EntityManager) {
+        const repo = manager ? manager.getRepository(AdmissionPayer) : this;
+
+        const payer = await repo.findOne({
+            where: {
+                id: data.payerId,
+                admissionId: data.admissionId,
+            },
+        });
+
+        if (!payer) {
+            return {
+                existPayer: false as const,
+                payer: null,
+            };
+        }
+
+        repo.merge(payer, {
+            name: data.name || payer.name,
+            payerType: (data.payerType as AdmissionPayerType) || payer.payerType,
+            policyNumber: data.policyNumber || payer.policyNumber,
+            coveragePercentage: data.coveragePercentage ?? payer.coveragePercentage,
+            coverageLimit: data.coverageLimit ?? payer.coverageLimit,
+            validUntil: data.validUntil ? new Date(data.validUntil) : payer.validUntil,
+            updatedBy: data.updatedBy,
+        });
+
+        const updatedPayer = await repo.save(payer);
+
+        return {
+            existPayer: true as const,
+            payer: updatedPayer,
+        };
+    }
+
+    // 3. Suppression douce d'un payeur (DELETE /admission/payer/:payerId)
+    async removeSinglePayer(data: RemovePayerInput, manager?: EntityManager) {
+        const repo = manager ? manager.getRepository(AdmissionPayer) : this;
+
+        const payer = await repo.findOne({
+            where: {
+                id: data.payerId,
+                admissionId: data.admissionId,
+            },
+        });
+
+        if (!payer) {
+            return {
+                existPayer: false as const,
+            };
+        }
+
+        payer.deletedBy = data.deletedBy;
+        await repo.save(payer);
+        await repo.softRemove(payer);
+
+        return {
+            existPayer: true as const,
+        };
+    }
+
+    // 4. Recherche des payeurs d'une admission
+    async findPayersByAdmission(data: FindPayersByAdmissionInput) {
+        return await this.find({
+            where: {
+                admissionId: data.admissionId,
+            },
+            order: {
+                createdAt: "DESC",
+            },
+        });
     }
 }

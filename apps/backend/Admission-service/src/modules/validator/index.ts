@@ -1,3 +1,5 @@
 export * from "./admission.enum"
 export * from "./admission.validator"
 export * from "./companion.validator"
+export * from "./payer.validator"
+export * from "./document.validator"

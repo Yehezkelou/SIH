@@ -63,7 +63,8 @@
         "apps/backend-e2e/**/*",
         "apps/backend-e2e/**/*",
         "backend-e2e/**/*",
-        "apps/backend/Admission-service-e2e/**/*"
+        "apps/backend/Admission-service-e2e/**/*",
+        "apps/backend/urgency-service-e2e/**/*"
       ]
     }
   ],

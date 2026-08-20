@@ -1,10 +1,14 @@
 import { Injectable } from "@nestjs/common";
-import { DataSource, EntityManager, In, Repository } from "typeorm";
+import { Between, DataSource, EntityManager, FindOptionsWhere, ILike, In, LessThanOrEqual, MoreThanOrEqual, Repository } from "typeorm";
 import { Admission } from "../entities/admission.entity";
-import {CreateAdmissionInput, AdmissionStatus, EncounterStatus, UpdateAdmissionInput} from "../validator/index"
-import { AdmissionCompanion, AdmissionDocument, AdmissionPayer, Encounter, Relationship } from "../entities";
+import {CreateAdmissionInput, AdmissionStatus, EncounterStatus, UpdateAdmissionInput, findAdmissionByIdInput, findActiveAdmissionByPatientInput, AdmissionQueryInput, UpdateAdmissionStatusInput, CreateMovementInput, CancelAdmissionInput, SoftDeleteAdmissionInput} from "../validator/index"
+import { AdmissionCompanion, AdmissionDocument, AdmissionPayer, Encounter,  MovementType, Relationship } from "../entities";
 import { GeneratedAdmissionNumber, GeneratedEncounterNumber } from "../../helpers/UniqueNumero";
-
+import { DocumentRepository } from "./documents.repository";
+import { CompanionRepository } from "./companions.repository";
+import { PayersRepository } from "./payer.repository";
+import { EncounterRepository } from "./encounter.repository";
+import { EncounterMovementRepository } from "./EncounterMovement.repository";
 
 
 const ACTIVE_ADMISSION_STATUSES = [
@@ -16,6 +20,25 @@ const ACTIVE_ADMISSION_STATUSES = [
     AdmissionStatus.DISCHARGED_PENDING,
 ]
 
+export const ALLOWED_STATUS_TRANSITIONS: Record<string, string[]> = {
+  [AdmissionStatus.PENDING]: [AdmissionStatus.REGISTERED, AdmissionStatus.CANCELLED],
+  [AdmissionStatus.PRE_ADMITTED]: [AdmissionStatus.REGISTERED, AdmissionStatus.CANCELLED],
+  [AdmissionStatus.REGISTERED]: [AdmissionStatus.ADMITTED, AdmissionStatus.CANCELLED],
+  [AdmissionStatus.ADMITTED]: [AdmissionStatus.TRANSFERED, AdmissionStatus.DISCHARGED_PENDING, AdmissionStatus.CANCELLED],
+  [AdmissionStatus.DISCHARGED_PENDING]: [AdmissionStatus.DISCHARGED, AdmissionStatus.ADMITTED],
+  [AdmissionStatus.DISCHARGED]: [AdmissionStatus.CLOSED],
+  
+  // États finaux : Aucune transition possible !
+  [AdmissionStatus.CLOSED]: [],
+  [AdmissionStatus.CANCELLED]: [],
+};
+
+// Fonction utilitaire de vérification
+export function isStatusTransitionAllowed(currentStatus: string, newStatus: string): boolean {
+  const allowedNextStatuses = ALLOWED_STATUS_TRANSITIONS[currentStatus] || [];
+  return allowedNextStatuses.includes(newStatus);
+}
+
 // nombre de tentatives de generation d'un numero unique avant abandon
 const MAX_NUMBER_GENERATION_ATTEMPT = 5
 
@@ -23,7 +46,14 @@ const MAX_NUMBER_GENERATION_ATTEMPT = 5
 @Injectable()
 export class AdmissionRepository extends Repository<Admission>{
 
-    constructor(private dataSource : DataSource){
+    constructor(
+        private dataSource : DataSource,
+        private readonly companions : CompanionRepository,
+        private readonly payers : PayersRepository,
+        private readonly encounter : EncounterRepository,
+        private readonly encounterMovement : EncounterMovementRepository,
+        private readonly documents : DocumentRepository,
+    ){
         super(Admission, dataSource.createEntityManager());
     }
 
@@ -163,7 +193,6 @@ export class AdmissionRepository extends Repository<Admission>{
     // update 
     async updateAdmission(data : UpdateAdmissionInput){
 
-
         // mise a jour de l'admission 
         return await this.dataSource.transaction(async (manage) => {
 
@@ -178,7 +207,7 @@ export class AdmissionRepository extends Repository<Admission>{
 
             if(!admission){
                 return {
-                    exist : false
+                    exist: false
                 }
             }
 
@@ -205,129 +234,6 @@ export class AdmissionRepository extends Repository<Admission>{
                 
             })
 
-            // mise a jour des companions 
-            const foundIdCompanions = (data.companions ?? []).map((c) => c.id).filter(Boolean);
-
-            const companions = foundIdCompanions.length > 0
-                ?  await manage.find(AdmissionCompanion, {
-                    where : {
-                        id : In(foundIdCompanions),
-                        admission: {
-                            id : data.admissionId,
-                            patientId : data.patientId,
-                            numeroPatient : data.numeroPatient,
-                            admissionNumber : data.admissionNumber
-                        }
-                    }
-                }) : [];
-
-            // recuperation des companion existant
-            const foundCompanionsIdSet = new Set(companions.map((c)=> c.id))
-            const existCompanions = companions
-            const notExistCompanions = (data.companions ?? []).filter((c)=> !foundCompanionsIdSet.has(c.id))
-
-
-            if(notExistCompanions.length > 0){
-                return {
-                    existCompanions: false,
-                    companions : notExistCompanions
-                }
-            }
-
-            const updateCompanions = (data.companions ?? []).map((c) => {
-                const companion = existCompanions.find((ec) => ec.id === c.id)
-
-               return manage.merge(AdmissionCompanion, companion!, {
-                firstName : c.firstName,
-                lastName : c.lastName,
-                address : c.address,
-                relationship : c.relationship as Relationship,
-                phoneNumber : c.phoneNumber,
-                updatedBy : data.updatedBy
-               })
-            })
-
-            // mise a jour des documents 
-            const documentsId = (data.documents ?? []).map((doc) => doc.id).filter(Boolean)
-            const documents = documentsId.length > 0 
-                    ? await manage.find(AdmissionDocument, {
-                    where : {
-                        id : In(documentsId),
-                        admission : {
-                            id : data.admissionId,
-                            patientId : data.patientId,
-                            numeroPatient : data.numeroPatient,
-                            admissionNumber : data.admissionNumber
-                        }
-                    }
-                }) : [];
-
-            const foundDocumentIdSet = new Set((data.documents ?? []).map((d) => d.id))
-            // filter les document existant 
-            const existDocuments = documents
-            // filtrer les document qui existe pas
-            const notExistDocuments = (data.documents ?? []).filter((d) => !foundDocumentIdSet.has(d.id))
-            if(notExistDocuments.length > 0){
-                return{
-                    existDocuments : false,
-                    documents: notExistDocuments
-                } 
-             }
-
-            const updateDocuments = (data.documents ?? []).map((d) => {
-
-                const document = existDocuments.find((ed)=> ed.id === d.id)
-
-                return manage.merge(AdmissionDocument, document!, {
-                    documentExtension : d.documentExtension,
-                    documentName : d.documentName,
-                    documentSize : d.documentSize,
-                    documentType : d.documentUrl,
-                    documentUrl : d.documentUrl,
-                    updatedBy : data.updatedBy
-                })
-            })
-
-            // mise a jour payer
-            const foundPayersId = (data.payers ?? []).map(async (pay)=> pay.id).filter(Boolean)
-                const payers = foundPayersId.length > 0 ? await manage.find(AdmissionPayer, {
-                    where: {
-                        id : In(foundPayersId),
-                        admission : {
-                            id : data.admissionId,
-                            admissionNumber : data.admissionNumber,
-                            patientId : data.patientId,
-                            numeroPatient : data.numeroPatient
-                        }
-                    }
-                }) : [];
-
-            
-            const foundPayersSetId = new Set(payers.map((p) => p.id)) 
-            const existPayers = payers
-            const notExistPayers = (data.payers ?? []).filter((p) => !foundPayersSetId.has(p.id))
-            if(notExistPayers.length > 0){
-                return {
-                    existPayers: false,
-                    payers : notExistPayers
-                }
-            }
-
-            const updatePayers = (data.payers ?? []).map((pay)=>{
-                const payer = existPayers.find((ep)=> ep.id === pay.id)
-
-                return manage.merge(AdmissionPayer, payer!, {
-                    payerType : pay.payerType,
-                    policyNumber : pay.policyNumber,
-                    coverageLimit : pay.coverageLimit,
-                    coveragePercentage : pay.coveragePercentage,
-                    name : pay.name,
-                    validUntil : pay.validUntil,
-                    updatedBy : data.updatedBy
-                })
-            })
-
-            
             // cree le sejour par condition 
             // si le statut a changer en ADMITTED ou REGISTERED
             let saveEncounter : Encounter | undefined
@@ -370,7 +276,7 @@ export class AdmissionRepository extends Repository<Admission>{
                         break
                     }
                 }
-                
+
                 if(!encounter){
                     const newEncounter = manage.create(Encounter, {
                         admission : {
@@ -410,27 +316,369 @@ export class AdmissionRepository extends Repository<Admission>{
                 }
             }
 
-            // saveAll 
-            const [saveUpdateAdmission, saveUpdateDocuments, saveUpdateCompanions, saveUpdatePayers] = await Promise.all([
-                manage.save(updateAdmission),
-                manage.save(updateDocuments),
-                manage.save(updateCompanions),
-                manage.save(updatePayers)
-            ])
+            const saveUpdateAdmission = await manage.save(Admission, updateAdmission)
+            const updateCompanions = await this.companions.updateCompanions(data, manage)
+            const updateDocuments = await this.documents.updateDocument(data, manage)
+            const updatePayers = await this.payers.updatePayers(data, manage)
+
+         
 
             return {
                 exist : false as const,
-                admission : saveUpdateAdmission,
-                documents : saveUpdateDocuments,
-                companions : saveUpdateCompanions,
-                payers : saveUpdatePayers,
-                encounter : saveEncounter
+                saveUpdateAdmission,
+                updateCompanions,
+                updateDocuments,
+                updatePayers,
+                saveEncounter
             }
         })
     }
 
 
-    async findAdmission(){
+    async findAdmissionById(data: findAdmissionByIdInput){
         
+        const existing =  await this.findOne({
+            where : {
+                admissionNumber : data.admissionNumber,
+                id : data.admissionId,
+                numeroPatient : data.numeroPatient,
+                patientId : data.patientId
+            },
+            relations : {
+                encounters: true,
+                companions : true,
+                payers : true,
+                documents : true
+            }
+        })
+
+        if(!existing){
+            return {
+                existAdmission : false as const,
+                admission: null
+            }
+        }
+
+        return {
+            existAdmission : true as const,
+            existing
+        }
+    }
+
+    // admission active 
+    async findActiveAdmissionByPatient(data: findActiveAdmissionByPatientInput){
+
+        const activeAdmission = await this.findOne({
+            where : {
+                patientId : data.patientId,
+                admissionStatus :In(ACTIVE_ADMISSION_STATUSES),
+            },
+            relations : {
+                encounters : true,
+                companions : true,
+                documents : true,
+                payers : true
+            },
+            order : {
+                createdAt : "DESC",
+            }
+        })
+
+        if(!activeAdmission){
+            return {
+                 hasActiveAdmission : false as const,
+                 admission : null
+            }
+        }
+
+        return {
+            hasActiveAdmission : true as const,
+            admission : activeAdmission
+        }
+    }   
+
+    // 3. Recherche filtrée + paginée des admissions 
+    async findAdmissions(query: AdmissionQueryInput) {
+        const {
+            patientId,
+            numeroPatient,
+            admissionNumber,
+            doctorId,
+            admissionStatus,
+            admissionType,
+            startDate,
+            endDate,
+            page = 1,
+            limit = 10,
+        } = query;
+
+        // Construction dynamique de la clause WHERE
+        const where: FindOptionsWhere<Admission> = {};
+
+        if (patientId) where.patientId = patientId;
+        if (doctorId) where.doctorId = doctorId;
+        if (admissionStatus) where.admissionStatus = admissionStatus;
+        if (admissionType) where.admissionType = admissionType;
+
+        // Filtres textuels insensibles à la casse
+        if (numeroPatient) where.numeroPatient = ILike(`%${numeroPatient}%`);
+        if (admissionNumber) where.admissionNumber = ILike(`%${admissionNumber}%`);
+
+        // Filtre sur plage de dates
+        if (startDate && endDate) {
+            where.admissionDate = Between(startDate, endDate);
+        } else if (startDate) {
+            where.admissionDate = MoreThanOrEqual(startDate);
+        } else if (endDate) {
+            where.admissionDate = LessThanOrEqual(endDate);
+        }
+
+        // Calcul de la pagination
+        const skip = (page - 1) * limit;
+
+        // Exécution de la requête avec comptage
+        const [admissions, total] = await this.findAndCount({
+            where,
+            relations: {
+                encounters: true,
+                companions: true,
+                documents: true,
+                payers: true,
+            },
+            order: {
+                createdAt: "DESC",
+            },
+            skip,
+            take: limit,
+        });
+
+        const totalPages = Math.ceil(total / limit);
+
+        return {
+            data: admissions,
+            meta: {
+                total,
+                page,
+                limit,
+                totalPages,
+                hasNextPage: page < totalPages,
+                hasPreviousPage: page > 1,
+            },
+        };
+    }
+
+    // mise a jour du statut d'une admission 
+    async updateAdmissionStatus(data: UpdateAdmissionStatusInput) {
+
+        const admission = await this.findOne({
+            where: {
+                id: data.admissionId,
+                admissionNumber: data.numeroAdmission,
+                patientId: data.patientId || undefined,
+                numeroPatient: data.numeroPatient || undefined,
+            }, 
+            relations: {
+                encounters: true,
+                companions: true,
+                documents: true,
+                payers: true,
+            },
+        });
+
+        // 1. L'admission n'existe pas
+        if (!admission) {
+            return {
+                existAdmission: false as const,
+                invalidTransition: false as const,
+                admission: null,
+            };
+        }
+
+        // 2. Vérification de la validité de la transition de statut
+        const isValidTransition = isStatusTransitionAllowed(admission.admissionStatus, data.newStatus);
+        if (!isValidTransition) {
+            return {
+                existAdmission: true as const,
+                invalidTransition: true as const,
+                currentStatus: admission.admissionStatus,
+                targetStatus: data.newStatus,
+                admission: null,
+            };
+        }
+
+        // 3. Mise à jour du statut et de l'utilisateur
+        admission.admissionStatus = data.newStatus;
+        admission.updatedBy = data.updatedBy;
+
+        const updatedAdmission = await this.save(admission);
+
+        return {
+            exist: true as const,
+            invalidTransition: false as const,
+            admission: updatedAdmission,
+        };
+    }
+
+
+    async createMovement(data : CreateMovementInput){
+
+        return await this.dataSource.transaction(async (manager)=>{
+
+
+            // recupere l'encouter 
+            const encounter = await this.encounter.findEncounterById(
+                data.encounterId, 
+                data.encounterNumber,
+                data.admissionId,
+                data.admissionNumber,
+                data.patientId,
+                data.numeroPatient,
+                manager
+            ); 
+
+            if(!encounter){
+                return {
+                    existEncounter : false as const,
+                    locked : false as const
+                }
+            }
+
+            // Verification si le sejour est deja clos, sorti ou annule
+            const FORBIDDEN_STATUSES: string[] = [
+                EncounterStatus.ENCOUNTER_DISCHARGED,
+                EncounterStatus.ENCOUNTER_CLOSED,
+                EncounterStatus.ENCOUNTER_CANCELLED,
+            ];
+
+            if (FORBIDDEN_STATUSES.includes(encounter.encounterStatus)) {
+                return {
+                    existEncounter : true as const,
+                    locked : true as const,
+                    currentStatus : encounter.encounterStatus
+                }
+            }
+
+            // creation du movement 
+            const movement = await this.encounterMovement.createMovement({
+                encounterId : data.encounterId,
+                encounterNumber : data.encounterNumber,
+                movementType : data.movementType as MovementType,
+                fromDepartmentId : encounter.currentDepartmentId,
+                fromRoomId : encounter.currentRoomId,
+                fromBedId : encounter.currentBedId,
+                toDepartmentId : data.toDepartmentId,
+                toRoomId : data.toRoomId,
+                toBedId : data.toBedId,
+                movementBy : data.movementBy,
+                reason : data.reason,
+            }, manager);
+
+
+            // Mise a jour de la position 
+            await this.encounter.updatePosition(
+                data.encounterId, 
+                data.encounterNumber,
+                data.admissionId,
+                data.patientId, 
+                data.movementBy,
+                {
+                    currentDepartementId : movement.toDepartmentId,
+                    currentBedId : movement.toBedId,
+                    currentRomId : movement.toRoomId
+                },
+                manager
+            );
+
+            return {
+                existEncounter : true as const,
+                locked : false as const,
+                movement
+            }
+
+        })
+    }
+
+    // 1. Annulation métier d'une admission
+    async cancelAdmission(data: CancelAdmissionInput) {
+        return await this.dataSource.transaction(async (manager) => {
+            const admission = await manager.findOne(Admission, {
+                where: {
+                    id: data.admissionId,
+                    admissionNumber: data.numeroAdmission,
+                    patientId: data.patientId || undefined,
+                    numeroPatient: data.numeroPatient || undefined,
+                },
+                relations: {
+                    encounters: true,
+                    companions: true,
+                    documents: true,
+                    payers: true,
+                },
+            });
+
+            if (!admission) {
+                return {
+                    existAdmission: false as const,
+                    locked: false as const,
+                };
+            }
+
+            // Interdit d'annuler une admission déjà close ou sortie
+            if (admission.admissionStatus === AdmissionStatus.CLOSED || admission.admissionStatus === AdmissionStatus.DISCHARGED) {
+                return {
+                    existAdmission: true as const,
+                    locked: true as const,
+                    currentStatus: admission.admissionStatus,
+                };
+            }
+
+            // Annuler l'admission
+            admission.admissionStatus = AdmissionStatus.CANCELLED;
+            admission.reason = data.reason;
+            admission.updatedBy = data.cancelledBy;
+            await manager.save(Admission, admission);
+
+            // Annuler le séjour (Encounter) associé s'il existe
+            if (admission.encounters) {
+                admission.encounters.encounterStatus = EncounterStatus.ENCOUNTER_CANCELLED;
+                admission.encounters.updatedBy = data.cancelledBy;
+                await manager.save(Encounter, admission.encounters);
+            }
+
+            return {
+                existAdmission: true as const,
+                locked: false as const,
+                admission,
+            };
+        });
+    }
+
+    // 2. Suppression douce d'une admission
+    async softDeleteAdmission(data: SoftDeleteAdmissionInput) {
+        const admission = await this.findOne({
+            where: {
+                id: data.admissionId,
+                admissionNumber: data.numeroAdmission || undefined,
+                patientId: data.patientId || undefined,
+                numeroPatient: data.numeroPatient || undefined,
+            },
+        });
+
+        if (!admission) {
+            return {
+                existAdmission: false as const,
+            };
+        }
+
+        admission.deletedBy = data.deletedBy;
+        await this.save(admission);
+        await this.softRemove(admission);
+
+        return {
+            existAdmission: true as const,
+        };
     }
 }
+
+
+

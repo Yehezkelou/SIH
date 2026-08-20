@@ -1,0 +1,12 @@
+[00:00:03.646] Server  LOG     ✓ Ready in 2.7s
+[00:00:23.809] Server  LOG     ○ Compiling / ...
+[00:13:54.935] Server  LOG     ✓ Compiled in 575ms
+[00:14:08.027] Server  LOG     ✓ Compiled in 0ms
+[00:26:01.961] Server  LOG     ✓ Compiled in 378ms
+[01:18:03.948] Server  LOG     ✓ Compiled in 2.4s
+[01:20:01.051] Server  LOG     ✓ Compiled in 1372ms
+[01:21:15.292] Server  LOG     ✓ Compiled in 635ms
+[01:21:39.243] Server  LOG     ✓ Compiled in 394ms
+[01:22:08.267] Server  LOG     ✓ Compiled in 436ms
+[01:24:45.641] Server  LOG     ✓ Compiled in 819ms
+[01:35:44.398] Server  LOG     ○ Compiling /patients ...

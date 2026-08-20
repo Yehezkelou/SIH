@@ -2,6 +2,7 @@ packages:
   - 'packages/*'
   - 'libs/*'
   - 'apps/backend/*'
+  - 'apps/frontend/*'
   - 'apps/*'
   - 'backend'
   - 'backend-e2e'
@@ -12,4 +13,5 @@ allowBuilds:
   less: true
   nx: true
   protobufjs: true
+  sharp: true
   unrs-resolver: true

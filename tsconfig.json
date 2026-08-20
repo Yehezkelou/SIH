@@ -26,6 +26,12 @@
     },
     {
       "path": "./apps/backend/Admission-service"
+    },
+    {
+      "path": "./apps/backend/urgency-service-e2e"
+    },
+    {
+      "path": "./apps/backend/urgency-service"
     }
   ]
 }

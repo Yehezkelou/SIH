@@ -80,7 +80,7 @@ active en cours), ou lister/filtrer par statut, type, service, date.
 
 ---
 
-## 3. 🟡 Mise à jour d'une admission
+'## 3. 🟡 Mise à jour d'une admission
 
 **Contexte** : corriger/compléter les informations d'un dossier (médecin, motif,
 date de sortie prévue, statut).
@@ -97,7 +97,7 @@ date de sortie prévue, statut).
 | `PUT` | `/admission/:id` | Met à jour les champs d'une admission |
 | `PATCH` | `/admission/:id/status` | Change le statut (avec contrôle de transition) |
 
----
+---'
 
 ## 4. 🟡 Déplacements du patient (Encounter Movements / transferts)
 

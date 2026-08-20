@@ -6,6 +6,11 @@ import { DatabaseModule } from "../../../../../libs/database/src/index"
 import { LoggerModuleGlobale } from "../../../../../libs/logger/src/index"
 import { Admission, AdmissionCompanion, AdmissionDocument, AdmissionHistory, AdmissionPayer, AdmissionSubscriber, Encounter, EncounterMovement } from "./entities/index";
 import { AdmissionRepository } from "./repository/admission.repository";
+import { EncounterRepository } from "./repository/encounter.repository";
+import { EncounterMovementRepository } from "./repository/EncounterMovement.repository";
+import { CompanionRepository } from "./repository/companions.repository";
+import { PayersRepository } from "./repository/payer.repository";
+import { DocumentRepository } from "./repository/documents.repository";
 import { AdmissionService } from "./services/admission.service";
 import { IntegrationModule } from "./integrations/integration.module";
 
@@ -30,8 +35,13 @@ import { IntegrationModule } from "./integrations/integration.module";
         // subscriber
         AdmissionSubscriber,
 
-        // acces donnees admission
+        // acces donnees repositories
         AdmissionRepository,
+        EncounterRepository,
+        EncounterMovementRepository,
+        CompanionRepository,
+        PayersRepository,
+        DocumentRepository,
 
         // logique metier / traduction des erreurs
         AdmissionService,

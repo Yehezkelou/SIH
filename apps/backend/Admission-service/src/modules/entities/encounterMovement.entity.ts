@@ -16,6 +16,10 @@ export class EncounterMovement {
     encounterId!: string
 
     @Index()
+    @Column({type : "varchar", length : 255, nullable : true})
+    encounterNumber!: string
+    
+    @Index()
     @Column({type : "enum", enum : MovementType})
     movementType!: MovementType
 

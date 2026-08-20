@@ -1,8 +1,13 @@
-
 type T_MESSAGE_ERROR_ADMISSION =
     | "ADMISSION_PATIENT_ALREADY_ACTIVE"
     | "ADMISSION_NUMBER_GENERATION_FAILED"
     | "ADMISSION_PATIENT_NOT_FOUND"
+    | "ADMISSION_NOT_FOUND"
+    | "ADMISSION_LOCKED"
+    | "COMPANION_NOT_FOUND"
+    | "DOCUMENT_NOT_FOUND"
+    | "PAYER_NOT_FOUND"
+    | "ENCOUNTER_STATUS_TRANSITION_FORBIDDEN"
 
 type T_MESSAGE_ERROR_INTEGRATION =
     | "INTEGRATION_PATIENT_NOT_FOUND"
@@ -23,6 +28,36 @@ export const MESSAGE_ERROR : Record<T_MESSAGE_ERROR_ADMISSION, {MESSAGE : string
     ADMISSION_PATIENT_NOT_FOUND : {
         MESSAGE : "Le patient specifié est introuvable ou inactif.",
         CODE : "ADMISSION_PATIENT_NOT_FOUND"
+    },
+
+    ADMISSION_NOT_FOUND : {
+        MESSAGE : "L'admission spécifiée est introuvable ou inactive.",
+        CODE : "ADMISSION_NOT_FOUND"
+    },
+
+    ADMISSION_LOCKED : {
+        MESSAGE : "L'admission ne peut pas être modifiée car elle est déjà admise ou enregistrée.",
+        CODE : "ADMISSION_LOCKED"
+    },
+
+    COMPANION_NOT_FOUND : {
+        MESSAGE : "Un ou plusieurs compagnons spécifiés sont introuvables.",
+        CODE : "COMPANION_NOT_FOUND"
+    },
+
+    DOCUMENT_NOT_FOUND : {
+        MESSAGE : "Un ou plusieurs documents spécifiés sont introuvables.",
+        CODE : "DOCUMENT_NOT_FOUND"
+    },
+
+    PAYER_NOT_FOUND : {
+        MESSAGE : "Un ou plusieurs payeurs spécifiés sont introuvables.",
+        CODE : "PAYER_NOT_FOUND"
+    },
+
+    ENCOUNTER_STATUS_TRANSITION_FORBIDDEN : {
+        MESSAGE : "Impossible de réactiver un séjour déjà sorti, clos ou annulé.",
+        CODE : "ENCOUNTER_STATUS_TRANSITION_FORBIDDEN"
     }
 
 }

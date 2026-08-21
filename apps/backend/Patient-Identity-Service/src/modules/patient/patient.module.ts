@@ -17,13 +17,16 @@ import { PatientMergeLog } from "./entities/patientMergeLog.entity";
 import { ArchivDossierController, PatientInternalController, patientController, PatientGrpcController } from "./controllers";
 import { ArchivDossierRepository } from "./repositories";
 import { ArchivDossierService, PatientInternalService, PatientService } from "./services";
-
+import { JwtModule } from "@nestjs/jwt";
 
 @Module({
     imports: [
         DatabaseModule.forRoot([Patient, PatientHistory, ArchivDossier, ArchivDossierHistory, PatientSimilarityAlert, PatientMergeLog]),
         LoggerModuleGlobale.forRoot('PatientIdentityService'),
-        ScheduleModule.forRoot()
+        ScheduleModule.forRoot(),
+        JwtModule.register({
+            secret: process.env.SERVICE_JWT_SECRET || "default_secret",
+        })
     ],
 
 

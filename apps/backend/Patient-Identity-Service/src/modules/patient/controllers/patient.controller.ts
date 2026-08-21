@@ -120,6 +120,7 @@ export class patientController {
 
     }
 
+    // search patient
     @Get("search")
     @UseZodSchema(SearchPatientSchema)
     async searchPatient(@Query() query: SearchPatientInput, @Res() res: Response) {
@@ -138,6 +139,7 @@ export class patientController {
         })
     }
 
+    // get all patient
     @Get()
     async getAllPatient(@Body() data: { page: number, limit: number }, @Res() res: Response) {
 
@@ -156,6 +158,7 @@ export class patientController {
         })
     }
 
+    // get only patient 
     @Get("only-patient")
     @UseZodSchema(FindOnlyPatientSchema)
     async getOnlyPatient(@Body() data: FindOnePatientInput, @Res() res: Response) {
@@ -174,6 +177,7 @@ export class patientController {
         })
     }
 
+    // delete patient
     @Delete("delete")
     @UseZodSchema(softDeleteOnlyPatientSchema)
     async deletePatient(@Body() data: SoftDeleteOnePatientInput, @Res() res: Response) {
@@ -192,6 +196,7 @@ export class patientController {
         })
     }
 
+    // fusion de patient
     @Post("fusion")
     @UseZodSchema(MergePatientSchema)
     async fusionPatient(@Body() data : MergePatientInput, @Res() res : Response){

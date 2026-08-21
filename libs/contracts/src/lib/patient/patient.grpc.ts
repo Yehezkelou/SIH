@@ -1,4 +1,5 @@
 import { Observable } from "rxjs";
+import type { Metadata } from "@grpc/grpc-js";
 
 export const PATIENT_PACKAGE = "patient";
 export const PATIENT_SERVICE = "PatientInternal";
@@ -23,5 +24,6 @@ export interface VerifyPatientResponse {
 
 // Interface gRPC consommée par le client Admission-service (via RxJS Observable)
 export interface PatientInternalGrpc {
-  VerifyPatient(data: VerifyPatientRequest): Observable<VerifyPatientResponse>;
+  VerifyPatient(data: VerifyPatientRequest, metadata?: Metadata): Observable<VerifyPatientResponse>;
 }
+

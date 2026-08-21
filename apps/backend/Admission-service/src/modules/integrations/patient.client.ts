@@ -1,6 +1,8 @@
 import { HttpException, HttpStatus, Inject, Injectable, OnModuleInit } from "@nestjs/common";
 import type { ClientGrpc } from "@nestjs/microservices";
-import { lastValueFrom } from "rxjs";
+import { lastValueFrom, timeout } from "rxjs";
+import {Metadata} from "@grpc/grpc-js"
+import {JwtService} from "@nestjs/jwt"
 import {
     GetPatientInput,
     PatientSharedResponseInput,
@@ -14,7 +16,8 @@ export class PatientClientService implements OnModuleInit {
     private patientGrpc!: PatientInternalGrpc;
 
     constructor(
-        @Inject("PATIENT_PACKAGE") private readonly client: ClientGrpc
+        @Inject("PATIENT_PACKAGE") private readonly client: ClientGrpc,
+        private readonly jwtService: JwtService
     ) {}
 
     onModuleInit() {
@@ -22,10 +25,32 @@ export class PatientClientService implements OnModuleInit {
         this.patientGrpc = this.client.getService<PatientInternalGrpc>("PatientInternal");
     }
 
+    // generation automatique des metadonnée 
+    // d'auth grpc
+    private buildAuhtMetadata(): Metadata{
+        const token = this.jwtService.sign(
+            {
+                iss : process.env.SERVICE_NAME || "admission-service",
+                aud: "patient-identity-service"
+            },
+            {
+                secret : process.env.SERVICE_JWT_SECRET,
+                expiresIn : "60S" // en 60s
+            }
+        )
+        const metadata = new Metadata();
+        metadata.add("authorization", `Bearer ${token}`);
+
+        return metadata;
+    }
+
+
     async verifyPatient(data: GetPatientInput): Promise<PatientSharedResponseInput | null> {
         try {
-            // 1. Appel binaire gRPC ultra-rapide
-            const res = await lastValueFrom(this.patientGrpc.VerifyPatient(data));
+            // 1. Appel binaire gRPC
+            const res = await lastValueFrom(
+                this.patientGrpc.VerifyPatient(data, this.buildAuhtMetadata()).pipe(timeout(3000))
+            );
 
             // 2. Si res.found est false ➔ patient inexistant
             if (!res.found || !res.patient) {
@@ -43,6 +68,7 @@ export class PatientClientService implements OnModuleInit {
 
             return parsed.data;
         } catch (error: any) {
+
             // Code gRPC status 5 = NOT_FOUND
             if (error?.code === 5) return null;
 

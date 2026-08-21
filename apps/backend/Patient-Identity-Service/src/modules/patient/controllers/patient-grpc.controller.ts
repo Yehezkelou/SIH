@@ -1,8 +1,9 @@
-import { Controller } from "@nestjs/common";
+import { Controller, UseGuards } from "@nestjs/common";
 import { GrpcMethod } from "@nestjs/microservices";
 import { PinoLogger } from "nestjs-pino";
 import type { VerifyPatientRequest, VerifyPatientResponse } from "@org/contracts";
 import { PatientInternalService } from "../services/patient-internal.service";
+import { ServiceAuthGuard } from "../../../shared/guards/service-auth.guard";
 
 @Controller()
 export class PatientGrpcController {
@@ -13,6 +14,8 @@ export class PatientGrpcController {
     this.logger.setContext(PatientGrpcController.name);
   }
 
+  
+  @UseGuards(ServiceAuthGuard)
   @GrpcMethod("PatientInternal", "VerifyPatient")
   async verifyPatient(data: VerifyPatientRequest): Promise<VerifyPatientResponse> {
     this.logger.info({

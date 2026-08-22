@@ -35,9 +35,9 @@ import { JwtModule } from "@nestjs/jwt";
                         "grpc.keepalive_time_ms" : 30000,
                         "grpc.keepalive_timeout_ms" : 10000,
                         credentials : credentials.createSsl(
-                            readFileSync("certs/ca.crt"),
-                            readFileSync("certs/client.key"),
-                            readFileSync("certs/client.crt")
+                            readFileSync(join(process.cwd(), "certs/ca.crt")),
+                            readFileSync(join(process.cwd(), "certs/client.key")),
+                            readFileSync(join(process.cwd(), "certs/client.crt"))
                         )
                     }
                 })

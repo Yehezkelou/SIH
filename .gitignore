@@ -49,3 +49,9 @@ Thumbs.db
 .nx/self-healing
 vitest.config.*.timestamp*
 test-output
+
+# gRPC mTLS certificates (do not commit private keys)
+certs/*.key
+certs/*.crt
+certs/*.srl
+

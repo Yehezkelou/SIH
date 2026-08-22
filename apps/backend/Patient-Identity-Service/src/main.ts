@@ -18,16 +18,25 @@ async function bootstrap() {
       protoPath: join(process.cwd(), 'libs/contracts/proto/patient.proto'),
       url: process.env.PATIENT_GRPC_URL ?? '0.0.0.0:50051',
       credentials : ServerCredentials.createSsl(
-        readFileSync("certs/ca.crt"),
+        readFileSync(join(process.cwd(), "certs/ca.crt")),
         [{
-          private_key : readFileSync("certs/server.key"),
-          cert_chain : readFileSync("certs/server.crt")
+          private_key : readFileSync(join(process.cwd(), "certs/server.key")),
+          cert_chain : readFileSync(join(process.cwd(), "certs/server.crt"))
         }],
         true,
       )
     },
   });
 
+   // configuration cors
+  app.enableCors({
+    origin : process.env.CORS_ORIGIN ?
+             process.env.CORS_ORIGIN.split(',') 
+             : ["*"],
+    methods : ["GET", "POST", "PUT","PATCH", "DELETE", "OPTIONS"],
+    credentials : true,
+  })
+  
   // Démarrage des microservices gRPC
   await app.startAllMicroservices();
 

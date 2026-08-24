@@ -1,0 +1,66 @@
+syntax = "proto3";
+
+package auth;
+
+/**
+ * Service gRPC interne de validation de jeton et de résolution d'identité du personnel.
+ * Utilisé pour les échanges inter-services haute performance et sécurisés.
+ */
+service AuthInternal {
+  /**
+   * Valide un access token utilisateur et retourne les informations de session (rôles, permissions).
+   */
+  rpc ValidateToken (ValidateTokenRequest) returns (ValidateTokenResponse);
+
+  /**
+   * Résout un personnel_id (ID utilisateur) en informations d'identité affichables.
+   */
+  rpc GetUser (GetUserRequest) returns (GetUserResponse);
+}
+
+/**
+ * Requête de validation de jeton d'accès utilisateur.
+ */
+message ValidateTokenRequest {
+  string accessToken = 1;     // Jeton d'accès (JWT) transmis par l'utilisateur
+}
+
+/**
+ * Réponse retournée suite à la validation d'un jeton d'accès.
+ */
+message ValidateTokenResponse {
+  bool isValid = 1;            // Indicateur de validité (true si jeton valide et utilisateur actif)
+  string userId = 2;          // Identifiant unique UUID v4 de l'utilisateur
+  string matricule = 3;       // Matricule RH de l'utilisateur
+  repeated string roles = 4;  // Liste des codes de rôles de l'utilisateur
+  repeated string permissions = 5; // Liste des codes de permissions associées
+}
+
+/**
+ * Requête pour récupérer les informations d'un membre du personnel.
+ */
+message GetUserRequest {
+  string userId = 1;          // Identifiant unique UUID v4 de l'utilisateur à résoudre
+}
+
+/**
+ * Réponse retournée suite à la résolution d'identité d'un utilisateur.
+ */
+message GetUserResponse {
+  bool found = 1;             // Indicateur de présence (true si trouvé, false si introuvable)
+  UserPersonnel user = 2;     // Données d'identité partagées (présent uniquement si found = true)
+}
+
+/**
+ * Modèle représentatif du membre du personnel partagé entre les microservices.
+ */
+message UserPersonnel {
+  string id = 1;                  // Identifiant unique UUID v4 de l'utilisateur
+  string matricule = 2;           // Matricule RH de l'utilisateur
+  string nom = 3;                 // Nom de famille de l'utilisateur
+  string prenom = 4;              // Prénom de l'utilisateur
+  string email = 5;               // Email professionnel
+  string personnelType = 6;       // Type d'agent (MEDECIN, INFIRMIER, SECRETAIRE, etc.)
+  string specialite = 7;          // Spécialité médicale (ex: CARDIOLOGIE, vide si non applicable)
+  string serviceAffectation = 8;  // Service d'affectation (ex: URGENCES)
+}

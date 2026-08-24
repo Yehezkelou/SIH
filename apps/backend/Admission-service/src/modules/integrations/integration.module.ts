@@ -1,6 +1,7 @@
 import { Module } from "@nestjs/common";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { PatientClientService } from "./patient.client";
+import { AuthClientService } from "./auth.client";
 import {ClientsModule, Transport} from "@nestjs/microservices"
 import { join } from "path";
 import {credentials} from "@grpc/grpc-js"
@@ -41,11 +42,29 @@ import { JwtModule } from "@nestjs/jwt";
                         )
                     }
                 })
+            },
+            {
+                name : "AUTH_PACKAGE",
+                imports : [ConfigModule],
+                inject : [ConfigService],
+                useFactory : (config : ConfigService) => ({
+                    transport : Transport.GRPC,
+                    options : {
+                        package : "auth",
+                        protoPath : join(process.cwd(), "libs/contracts/proto/auth.proto"),
+                        url : config.get<string>("AUTH_GRPC_URL", "localhost:50052"),
+                        credentials : credentials.createSsl(
+                            readFileSync(join(process.cwd(), "certs/ca.crt")),
+                            readFileSync(join(process.cwd(), "certs/client.key")),
+                            readFileSync(join(process.cwd(), "certs/client.crt")),
+                        )
+                    }
+                })
             }
         ])
     ],
 
-    providers : [PatientClientService],
-    exports : [PatientClientService]
+    providers : [PatientClientService, AuthClientService],
+    exports : [PatientClientService, AuthClientService]
 })
 export class IntegrationModule{}

@@ -33,9 +33,10 @@ import { PasswordController } from "./controllers/password.controller";
 import { MfaController } from "./controllers/mfa.controller";
 import { UserController } from "./controllers/user.controller";
 import { UserDocumentController } from "./controllers/userDocument.controller";
+import { AuthGrpcController } from "./controllers/auth-grpc.controller";
 import { AuthPipeValidator } from "../../shared/pipes/auth.pipe";
 import { AuthFilterException } from "../../shared/filters/auth.filter";
-import { JwtAuthGuard, PermissionGuard, RolesGuard } from "../../shared/guards";
+import { JwtAuthGuard, PermissionGuard, RolesGuard, ServiceAuthGuard } from "../../shared/guards";
 
 /**
  * Module racine du microservice d'authentification du personnel (Auth-Service).
@@ -67,6 +68,7 @@ import { JwtAuthGuard, PermissionGuard, RolesGuard } from "../../shared/guards";
         MfaController,
         UserController,
         UserDocumentController,
+        AuthGrpcController,
     ],
 
     providers: [
@@ -85,6 +87,7 @@ import { JwtAuthGuard, PermissionGuard, RolesGuard } from "../../shared/guards";
         JwtAuthGuard,
         PermissionGuard,
         RolesGuard,
+        ServiceAuthGuard,
         {
             provide: APP_PIPE,
             useClass: AuthPipeValidator,
@@ -108,6 +111,7 @@ import { JwtAuthGuard, PermissionGuard, RolesGuard } from "../../shared/guards";
         JwtAuthGuard,
         PermissionGuard,
         RolesGuard,
+        ServiceAuthGuard,
     ],
 })
 export class AuthModule {}

@@ -1,4 +1,5 @@
-import { Body, Controller, Delete, Get, HttpStatus, Param, Patch, Post, Put, Query, Res, UploadedFiles } from "@nestjs/common";
+import { Body, Controller, Delete, Get, HttpStatus, Param, Patch, Post, Put, Query, Res, UploadedFiles, UseGuards } from "@nestjs/common";
+import { UserAuthGuard } from "../../shared/user-auth.guard";
 import { AdmissionService } from "../services/admission.service";
 import { PinoLogger } from "nestjs-pino";
 import { UseAdmissionFiles } from "../../helpers/decorator/AdmissionFile.decorator";
@@ -14,6 +15,7 @@ import {
 } from "../validator";
 
 @Controller("admission")
+@UseGuards(UserAuthGuard)
 export class AdmissionController {
     constructor(
         private readonly service: AdmissionService,

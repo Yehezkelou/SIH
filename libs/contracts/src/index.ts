@@ -3,3 +3,5 @@ export * from './lib/database/database.schema.js';
 export * from './lib/patient/patient-contract.schema.js';
 export * from './lib/patient/patient.grpc.js';
 export * from './lib/auth/rbac.constants.js';
+export * from './lib/auth/auth-contract.schema.js';
+export * from './lib/auth/auth.grpc.js';

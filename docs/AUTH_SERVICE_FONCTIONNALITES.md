@@ -79,7 +79,7 @@ Enums (`auth.enum.ts`) : `PersonnelType`, `UserStatus`, `Genre`, `MfaMethod`, `P
 - [ ] **`RolesGuard`** + décorateur `@Roles(...)` (optionnel, plus grossier).
 - [ ] `@CurrentUser()` — décorateur d'injection de l'agent courant.
 
-### 3.7 Exposition inter-service (gRPC) — `src/modules/auth/controllers`
+### 3.7 Exposition inter-service (gR""PC) — `src/modules/auth/controllers`
 - [ ] Ajouter un **serveur gRPC** dans `main.ts` (mTLS, comme le Patient-Service).
 - [ ] Contrat `auth.proto` dans `libs/contracts/proto/` + schémas Zod dans `libs/contracts`.
 - [ ] Méthode **`ValidateToken`** : les services Patient/Admission valident un access token et récupèrent `{ userId, matricule, roles, permissions }`.
@@ -94,7 +94,6 @@ Enums (`auth.enum.ts`) : `PersonnelType`, `UserStatus`, `Genre`, `MfaMethod`, `P
 ### 3.9 Tâches planifiées (`@nestjs/schedule`, déjà importé)
 - [ ] Purge périodique des `refresh_tokens` et `password_resets` expirés.
 - [ ] Déverrouillage des comptes dont `lockedUntil` est dépassé.
-
 ---
 
 ## 4. Infrastructure transverse à implémenter (comme les autres services)

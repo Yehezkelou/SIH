@@ -1,8 +1,10 @@
-import { Body, Controller, Get, HttpStatus, Post, Req, Res } from "@nestjs/common";
+import { Body, Controller, Get, HttpStatus, Post, Req, Res, UseGuards } from "@nestjs/common";
 import { AuthService } from "../services/auth.service";
 import { PinoLogger } from "nestjs-pino";
 import * as express from "express";
 import { UseZodSchema } from "../../../helpers/decorator/zodSchema.decorator";
+import { CurrentUser } from "../../../helpers/decorator/currentUser.decorator";
+import { JwtAuthGuard } from "../../../shared/guards";
 import {
     LoginPasswordSchema,
     LoginPinSchema,
@@ -32,7 +34,7 @@ export class AuthController {
         @Res() res: express.Response
     ) {
         const ipAddress = (req.headers["x-forwarded-for"] as string) || req.ip || "";
-        const userAgent = req.headers["user-agent"] || "";
+        const userAgent = (req.headers["user-agent"] as string) || "";
 
         this.logger.info({
             message: "Tentative de connexion utilisateur par mot de passe",
@@ -59,7 +61,7 @@ export class AuthController {
         @Res() res: express.Response
     ) {
         const ipAddress = (req.headers["x-forwarded-for"] as string) || req.ip || "";
-        const userAgent = req.headers["user-agent"] || "";
+        const userAgent = (req.headers["user-agent"] as string) || "";
 
         this.logger.info({
             message: "Tentative de connexion utilisateur par Code PIN",
@@ -86,7 +88,7 @@ export class AuthController {
         @Res() res: express.Response
     ) {
         const ipAddress = (req.headers["x-forwarded-for"] as string) || req.ip || "";
-        const userAgent = req.headers["user-agent"] || "";
+        const userAgent = (req.headers["user-agent"] as string) || "";
 
         this.logger.info({
             message: "Demande de rafraîchissement de token",
@@ -121,11 +123,11 @@ export class AuthController {
 
     // POST /api/auth/logout-all - Déconnexion globale de toutes les sessions
     @Post("logout-all")
+    @UseGuards(JwtAuthGuard)
     async logoutAll(
-        @Req() req: any,
+        @CurrentUser("id") userId: string,
         @Res() res: express.Response
     ) {
-        const userId = req.user?.sub;
         const result = await this.service.logoutAll(userId);
 
         return res.status(HttpStatus.OK).json({
@@ -137,11 +139,11 @@ export class AuthController {
 
     // GET /api/auth/me - Récupérer le profil & permissions de l'agent connecté
     @Get("me")
+    @UseGuards(JwtAuthGuard)
     async getMe(
-        @Req() req: any,
+        @CurrentUser("id") userId: string,
         @Res() res: express.Response
     ) {
-        const userId = req.user?.sub;
         const result = await this.service.getMe(userId);
 
         return res.status(HttpStatus.OK).json({

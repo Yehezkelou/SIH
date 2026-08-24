@@ -18,7 +18,6 @@ export class AuthService {
         private readonly jwt: JwtService
     ) {}
 
-
     // connexion par password
     async loginPassword(data: LoginPasswordInput, ipAddress?: string, userAgent?: string) {
         const user = await this.user.findByIdentifier(data.identifier);
@@ -39,7 +38,7 @@ export class AuthService {
             }, HttpStatus.UNAUTHORIZED);
         }
 
-        // Vérification du verrouillage temporel
+        // verification du verouillage 
         if (user.lockedUntil && user.lockedUntil > new Date()) {
             await this.loginAttemp.recordAttempt({
                 userId: user.id,
@@ -57,7 +56,7 @@ export class AuthService {
             }, HttpStatus.FORBIDDEN);
         }
 
-        // Vérification du statut du compte
+        // verification du status du compte 
         if (user.status === UserStatus.SUSPENDU || user.status === UserStatus.INACTIF) {
             throw new HttpException({
                 statusCode: HttpStatus.FORBIDDEN,
@@ -66,7 +65,7 @@ export class AuthService {
             }, HttpStatus.FORBIDDEN);
         }
 
-        // Si le compte nécessite une activation (1ère connexion)
+        // si le compte necessite une activation 
         if (user.status === UserStatus.EN_ATTENTE_ACTIVATION) {
             const isTempPasswordValid = user.passwordHash
                 ? await bcrypt.compare(data.password, user.passwordHash)
@@ -116,7 +115,7 @@ export class AuthService {
             }, HttpStatus.UNAUTHORIZED);
         }
 
-        // Succès de connexion
+        // succe de connexion 
         await this.user.recordLoginSuccess({
             userId: user.id,
             ipAddress,
@@ -130,7 +129,24 @@ export class AuthService {
             userAgent,
         });
 
-        // Générer le token du user
+        // si le MFA est activé sur le compte de l'agent
+        if (user.mfaEnabled) {
+            const mfaToken = this.jwt.sign(
+                { sub: user.id, type: "MFA_PENDING" },
+                {
+                    secret: process.env.USER_JWT_SECRET || "default_user_secret",
+                    expiresIn: "3m",
+                }
+            );
+
+            return {
+                mfaRequired: true,
+                mfaToken,
+                message: "Veuillez saisir le code à 6 chiffres généré par votre application Authenticator.",
+            };
+        }
+
+        // genere le token du user
         return await this.generateUserToken(user, ipAddress, userAgent);
     }
 
@@ -212,7 +228,6 @@ export class AuthService {
             }, HttpStatus.UNAUTHORIZED);
         }
 
-        // Détection de rejeu (Replay Attack)
         if (storedToken.revokedAt || storedToken.replacedByTokenId) {
             await this.refreshTokenRepo.revokeAllUserTokens(storedToken.userId);
 
@@ -277,7 +292,6 @@ export class AuthService {
         };
     }
 
-    
     // deconnexion 
     async logout(data: LogoutInput) {
         const tokenHash = crypto.createHash("sha256").update(data.refreshToken).digest("hex");
@@ -290,7 +304,6 @@ export class AuthService {
         return { message: "Déconnexion réussie" };
     }
 
-    
     // deconnexion globale
     async logoutAll(userId: string) {
         await this.refreshTokenRepo.revokeAllUserTokens(userId);
@@ -327,9 +340,8 @@ export class AuthService {
         };
     }
 
-    
     // generate user token
-    private async generateUserToken(user: User, ipAddress?: string, userAgent?: string) {
+    async generateUserToken(user: User, ipAddress?: string, userAgent?: string) {
         const roles: string[] = user.userRoles?.map((ur: UserRole) => ur.role?.code).filter((r): r is string => Boolean(r)) ?? [];
         const permissions: string[] = user.userRoles?.flatMap((ur: UserRole) => ur.role?.rolePermissions?.map((rp: RolePermission) => rp.permission?.code)).filter((p): p is string => Boolean(p)) ?? [];
 

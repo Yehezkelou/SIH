@@ -1,5 +1,3 @@
-
-
 // ===== Type de personnel (métier) =====
 // Catégorise l'agent dans l'organisation hospitalière.
 export enum PersonnelType {
@@ -70,4 +68,16 @@ export enum LoginAttemptStatus {
     FAILED_ACCOUNT_INACTIVE = "FAILED_ACCOUNT_INACTIVE",
     FAILED_MFA = "FAILED_MFA",
     LOGOUT = "LOGOUT",
+}
+
+// ===== Types de documents justificatifs du personnel hospitalier =====
+export enum UserDocumentType {
+    CNI = "CNI",                                 // Carte Nationale d'Identité
+    PASSEPORT = "PASSEPORT",                     // Passeport
+    CARTE_SEJOUR = "CARTE_SEJOUR",               // Titre / Carte de séjour
+    DIPLOME = "DIPLOME",                         // Diplôme d'état (Médecin, Infirmier...)
+    CARTE_PROFESSIONNELLE = "CARTE_PROFESSIONNELLE", // Carte RPPS / Ordre / CPS
+    CASIER_JUDICIAIRE = "CASIER_JUDICIAIRE",     // Extrait de casier judiciaire (B3)
+    CONTRAT_TRAVAIL = "CONTRAT_TRAVAIL",         // Contrat de travail / Convention
+    AUTRE = "AUTRE",
 }

@@ -137,6 +137,9 @@ export class User {
     @OneToMany(() => RefreshToken, (token) => token.user)
     refreshTokens?: RefreshToken[];
 
+    @OneToMany("UserDocument", "user")
+    documents?: any[];
+
     // ===== Métadonnées système =====
     @CreateDateColumn()
     createdAt!: Date;

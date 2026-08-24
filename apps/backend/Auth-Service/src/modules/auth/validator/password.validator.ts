@@ -1,4 +1,4 @@
-import z from "zod";
+import z, { string } from "zod";
 
 /**
  * 1. Schéma pour le changement de mot de passe (ou activation initiale de compte)
@@ -43,7 +43,19 @@ export const ResetPasswordSchema = z.object({
     .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, "Le nouveau mot de passe doit contenir au moins 1 majuscule, 1 minuscule et 1 chiffre"),
 });
 
+/**
+ * 4 Schema de sauvegarde d'un token
+ *
+*/
+
+export const SaveResetTokenSchema = z.object({
+    userId : z.string("l'identifiant utilisateur est obligatoire"),
+    tokenHash : z.string("le hash du token est obligatoire"),
+    expiresAt : z.date("La data d'expiration est obligatoire")
+})
+
 // Types TypeScript inférés
 export type ChangePasswordInput = z.infer<typeof ChangePasswordSchema>;
 export type ForgotPasswordInput = z.infer<typeof ForgotPasswordSchema>;
 export type ResetPasswordInput = z.infer<typeof ResetPasswordSchema>;
+export type SaveResetTokenInput = z.infer<typeof SaveResetTokenSchema>

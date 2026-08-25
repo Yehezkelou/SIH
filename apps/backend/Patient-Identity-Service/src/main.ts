@@ -5,6 +5,7 @@ import { join } from 'path';
 import { PatientModule } from './modules/patient/patient.module';
 import {ServerCredentials, ServerMetricRecorder} from "@grpc/grpc-js"
 import { readFileSync } from 'fs';
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 
 async function bootstrap() {
   const app = await NestFactory.create(PatientModule);
@@ -42,6 +43,16 @@ async function bootstrap() {
 
   // Prefix HTTP REST
   app.setGlobalPrefix(globalPrefix);
+
+  // Configuration Swagger
+  const config = new DocumentBuilder()
+    .setTitle('Patient Identity Service')
+    .setDescription('API de Gestion des Identités Patients et Dossiers')
+    .setVersion('1.0')
+    .addBearerAuth()
+    .build();
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api/patient/docs', app, document);
 
   const port = process.env.PORT || 3000;
   await app.listen(port);

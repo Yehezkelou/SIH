@@ -37,6 +37,7 @@ import { AuthGrpcController } from "./controllers/auth-grpc.controller";
 import { AuthPipeValidator } from "../../shared/pipes/auth.pipe";
 import { AuthFilterException } from "../../shared/filters/auth.filter";
 import { JwtAuthGuard, PermissionGuard, RolesGuard, ServiceAuthGuard } from "../../shared/guards";
+import { HealthModule } from "../health/health.module";
 
 /**
  * Module racine du microservice d'authentification du personnel (Auth-Service).
@@ -60,6 +61,7 @@ import { JwtAuthGuard, PermissionGuard, RolesGuard, ServiceAuthGuard } from "../
         JwtModule.register({
             secret: process.env.USER_JWT_SECRET || "default_user_secret",
         }),
+        HealthModule,
     ],
 
     controllers: [

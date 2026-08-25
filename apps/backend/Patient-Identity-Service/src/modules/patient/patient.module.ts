@@ -17,7 +17,15 @@ import { PatientMergeLog } from "./entities/patientMergeLog.entity";
 import { ArchivDossierController, PatientInternalController, patientController, PatientGrpcController } from "./controllers";
 import { ArchivDossierRepository } from "./repositories";
 import { ArchivDossierService, PatientInternalService, PatientService } from "./services";
+import { AuthClientService } from "./services/auth.client";
+import { UserAuthGuard } from "../../shared/guards/user-auth.guard";
+import { VerifyPersonnelGuard } from "../../shared/guards/verify-personnel.guard";
 import { JwtModule } from "@nestjs/jwt";
+import { ClientsModule, Transport } from "@nestjs/microservices";
+import { credentials } from "@grpc/grpc-js";
+import { readFileSync } from "fs";
+import { join } from "path";
+import { HealthModule } from "../health/health.module";
 
 @Module({
     imports: [
@@ -26,7 +34,24 @@ import { JwtModule } from "@nestjs/jwt";
         ScheduleModule.forRoot(),
         JwtModule.register({
             secret: process.env.SERVICE_JWT_SECRET || "default_secret",
-        })
+        }),
+        ClientsModule.register([
+            {
+                name: "AUTH_PACKAGE",
+                transport: Transport.GRPC,
+                options: {
+                    package: "auth",
+                    protoPath: join(process.cwd(), "libs/contracts/proto/auth.proto"),
+                    url: process.env.AUTH_GRPC_URL ?? "localhost:50052",
+                    credentials: credentials.createSsl(
+                        readFileSync(join(process.cwd(), "certs/ca.crt")),
+                        readFileSync(join(process.cwd(), "certs/client.key")),
+                        readFileSync(join(process.cwd(), "certs/client.crt"))
+                    )
+                }
+            }
+        ]),
+        HealthModule
     ],
 
 
@@ -49,6 +74,9 @@ import { JwtModule } from "@nestjs/jwt";
         PatientService,
         ArchivDossierService,
         PatientInternalService,
+        AuthClientService,
+        UserAuthGuard,
+        VerifyPersonnelGuard,
 
         // gerer les filter exception patient
         {

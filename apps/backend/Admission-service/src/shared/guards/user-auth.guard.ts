@@ -1,9 +1,9 @@
 import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from "@nestjs/common";
-import { AuthClientService } from "../modules/integrations/auth.client"
+import { AuthClientService } from "../../modules/integrations/auth.client"
 
 @Injectable()
 export class UserAuthGuard implements CanActivate {
-    constructor(private readonly authClient: AuthClientService) {}
+    constructor(private readonly authClient: AuthClientService) { }
 
     async canActivate(context: ExecutionContext): Promise<boolean> {
         const request = context.switchToHttp().getRequest();
@@ -14,7 +14,7 @@ export class UserAuthGuard implements CanActivate {
         }
 
         const token = authHeader.split(" ")[1];
-        
+
         // Validation gRPC avec l'Auth-Service
         const validation = await this.authClient.validateUserToken(token);
 

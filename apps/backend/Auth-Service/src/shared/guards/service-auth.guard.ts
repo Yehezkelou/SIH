@@ -56,7 +56,7 @@ export class ServiceAuthGuard implements CanActivate {
             });
 
             // contrôler la liste blanche interservice 
-            const allowedService = ["admission-service", "patient-identity-service", "urgency-service"];
+            const allowedService = ["admission-service", "patient-identity-service", "urgency-service", "api-gateway"];
             if (!allowedService.includes(payload.iss)) {
                 this.logger.warn({
                     message: `Accès refusé par la liste blanche interservice pour le service '${payload.iss}'`,

@@ -5,6 +5,7 @@ import { join } from 'path';
 import { AuthModule } from './modules/auth/auth.module';
 import { ServerCredentials } from '@grpc/grpc-js';
 import { readFileSync } from 'fs';
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 
 async function bootstrap() {
   const app = await NestFactory.create(AuthModule);
@@ -42,6 +43,16 @@ async function bootstrap() {
 
   // Préfixe HTTP REST
   app.setGlobalPrefix(globalPrefix);
+
+  // Configuration Swagger
+  const config = new DocumentBuilder()
+    .setTitle('Auth Service')
+    .setDescription('API d\'Authentification et de Gestion des Utilisateurs')
+    .setVersion('1.0')
+    .addBearerAuth()
+    .build();
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api/auth/docs', app, document);
 
   const port = process.env.PORT || 3003;
   await app.listen(port);

@@ -22,6 +22,8 @@ import { CompanionController } from "./controllers/companions.controller";
 import { DocumentController } from "./controllers/documents.controller";
 import { PayersController } from "./controllers/payers.controller";
 import { IntegrationModule } from "./integrations/integration.module";
+import { VerifyPersonnelGuard } from "../shared/guards/verify-personnel.guard";
+import { HealthModule } from "./health/health.module";
 
 
 @Module({
@@ -37,6 +39,7 @@ import { IntegrationModule } from "./integrations/integration.module";
         ]),
         LoggerModuleGlobale.forRoot("AdmissionService"),
         IntegrationModule,
+        HealthModule
     ],
 
     controllers: [
@@ -66,6 +69,7 @@ import { IntegrationModule } from "./integrations/integration.module";
         CompanionService,
         DocumentService,
         PayersService,
+        VerifyPersonnelGuard,
 
         // validation des donné entrant
         {

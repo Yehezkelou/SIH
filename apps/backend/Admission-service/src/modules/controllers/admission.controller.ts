@@ -1,5 +1,6 @@
 import { Body, Controller, Delete, Get, HttpStatus, Param, Patch, Post, Put, Query, Res, UploadedFiles, UseGuards } from "@nestjs/common";
-import { UserAuthGuard } from "../../shared/user-auth.guard";
+import { UserAuthGuard } from "../../shared/guards/user-auth.guard";
+import { VerifyPersonnelGuard, VerifyPersonnel } from "../../shared/guards/verify-personnel.guard";
 import { AdmissionService } from "../services/admission.service";
 import { PinoLogger } from "nestjs-pino";
 import { UseAdmissionFiles } from "../../helpers/decorator/AdmissionFile.decorator";
@@ -27,6 +28,8 @@ export class AdmissionController {
     // POST /admission - Créer une admission
     @Post()
     @UseAdmissionFiles()
+    @UseGuards(VerifyPersonnelGuard)
+    @VerifyPersonnel("admission.doctorId")
     async createNewAdmission(
         @Body() data: CreateAdmissionInput,
         @UploadedFiles() files: Express.Multer.File[],

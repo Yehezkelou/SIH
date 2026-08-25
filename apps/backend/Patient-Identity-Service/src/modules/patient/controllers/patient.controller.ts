@@ -1,4 +1,5 @@
-import { Body, Controller, Delete, Get, HttpStatus, Post, Put, Query, Res } from "@nestjs/common";
+import { Body, Controller, Delete, Get, HttpStatus, Post, Put, Query, Res, UseGuards } from "@nestjs/common";
+import { UserAuthGuard } from "../../../shared/guards/user-auth.guard";
 import { PinoLogger } from "nestjs-pino";
 import type { Response } from "express"
 import { Patient } from "../entities/patient.entity";
@@ -29,6 +30,7 @@ import { UseZodSchema } from "../../../helpers/decorator/zodSchema.decorator";
 
 
 @Controller('patient')
+@UseGuards(UserAuthGuard)
 export class patientController {
     constructor(
         private readonly service: PatientService,

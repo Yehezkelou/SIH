@@ -1,4 +1,5 @@
-import { Body, Controller, Delete, Get, HttpStatus, Put, Query, Res, UploadedFile } from "@nestjs/common";
+import { Body, Controller, Delete, Get, HttpStatus, Put, Query, Res, UploadedFile, UseGuards } from "@nestjs/common";
+import { UserAuthGuard } from "../../../shared/guards/user-auth.guard";
 import { ArchivDossierService } from "../services/archivDossier.service";
 import { UsePatientFile } from "../../../helpers/decorator/PatientFiles.decorator";
 import { PinoLogger } from "nestjs-pino";
@@ -16,6 +17,7 @@ import {
 
 
 @Controller('dossier')
+@UseGuards(UserAuthGuard)
 export class ArchivDossierController {
     constructor(
         private readonly archivDossierService : ArchivDossierService,

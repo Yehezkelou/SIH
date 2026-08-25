@@ -6,12 +6,8 @@ import {ClientsModule, Transport} from "@nestjs/microservices"
 import { join } from "path";
 import {credentials} from "@grpc/grpc-js"
 import { readFileSync } from "fs";
-
-
-
-
-
 import { JwtModule } from "@nestjs/jwt";
+
 
 @Module({
     imports : [

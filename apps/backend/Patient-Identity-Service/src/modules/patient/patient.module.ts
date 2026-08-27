@@ -15,7 +15,7 @@ import { ScheduleModule } from "@nestjs/schedule";
 import { PatientSimilarityAlert } from "./entities/patientSimilarityAlert.entity";
 import { PatientMergeLog } from "./entities/patientMergeLog.entity";
 import { ArchivDossierController, PatientInternalController, patientController, PatientGrpcController } from "./controllers";
-import { ArchivDossierRepository } from "./repositories";
+import { ArchivDossierRepository, PatientInternalRepository } from "./repositories";
 import { ArchivDossierService, PatientInternalService, PatientService } from "./services";
 import { AuthClientService } from "./services/auth.client";
 import { UserAuthGuard } from "../../shared/guards/user-auth.guard";
@@ -63,6 +63,7 @@ import { HealthModule } from "../health/health.module";
 
         // gerer les repo archivDossier
         ArchivDossierRepository,
+        PatientInternalRepository,
 
         // gerer les subscriber patient
         PatientSubscriber,

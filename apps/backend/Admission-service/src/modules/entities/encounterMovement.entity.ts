@@ -1,4 +1,4 @@
-import { Column, CreateDateColumn, DeleteDateColumn, Entity,  Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Column, CreateDateColumn, DeleteDateColumn, Entity,  Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn, Relation, UpdateDateColumn } from "typeorm";
 import { MovementType } from "./admission.enum";
 import { Encounter } from "./encounter.entity";
 
@@ -67,7 +67,7 @@ export class EncounterMovement {
     // relation inverse (reutilise la colonne encounterId deja declaree ci-dessus)
     @ManyToOne(() => Encounter, encounter => encounter.movements)
     @JoinColumn({name : "encounterId"})
-    encounter!: Encounter
+    encounter!: Relation<Encounter>
 
 
     // date audit
@@ -82,13 +82,13 @@ export class EncounterMovement {
     deletedAt!: Date
 
     // utitilisateur audit
-    @Column({length : 255, type : "uuid", nullable : true})
+    @Column({type : "uuid", nullable : true})
     updatedBy!: string
 
-    @Column({length : 255, type : "uuid", nullable : true})
+    @Column({type : "uuid", nullable : true})
     deletedBy!: string
 
-    @Column({length : 255, type : "uuid", nullable : true})
+    @Column({type : "uuid", nullable : true})
     createdBy!: string
     
 }

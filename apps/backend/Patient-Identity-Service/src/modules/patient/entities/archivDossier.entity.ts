@@ -1,4 +1,4 @@
-import { Column, CreateDateColumn, DeleteDateColumn, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm"
+import * as typeorm from "typeorm"
 import { Patient } from "./patient.entity";
 
 
@@ -12,73 +12,73 @@ import { Patient } from "./patient.entity";
  *
  * Référence : cahier_des_charges_patient_urgence.md - table `archiv_dossier`
  */
-@Entity()
+@typeorm.Entity()
 export class ArchivDossier {
 
     // Identifiant technique interne (clé primaire), généré automatiquement
-    @PrimaryGeneratedColumn("uuid")
+    @typeorm.PrimaryGeneratedColumn("uuid")
     id!: string;
 
 
     // relation avec le patient 
-    @ManyToOne(() => Patient, (patient) => patient.archivDossier)
-    patient!: Patient
+    @typeorm.ManyToOne(() => Patient, (patient) => patient.archivDossier)
+    patient!: typeorm.Relation<Patient>
     
 
     // Référence vers le dossier patient auquel ce document est rattaché
-    @Index()
-    @Column({ type: "uuid", nullable: true })
+    @typeorm.Index()
+    @typeorm.Column({ type: "uuid", nullable: true })
     dossierId?: string; 
 
     // Type de document sous forme libre (ex: "Ordonnance", "Analyse"...)
-    @Column({ type: "enum", enum : ["CNI", "PASSPORT", "ATTESTATION", "ACTE_NAISSANCE", "AUTRE"],nullable: true })
+    @typeorm.Column({ type: "enum", enum : ["CNI", "PASSPORT", "ATTESTATION", "ACTE_NAISSANCE", "AUTRE"],nullable: true })
     typeDoc?: string;
 
 
     // Nom du fichier archivé
-    @Column({ length: 145, type: "varchar", nullable: true })
+    @typeorm.Column({ length: 145, type: "varchar", nullable: true })
     name?: string;
 
     // Taille du fichier archivé
-    @Column({ length: 145, type: "varchar", nullable: true })
+    @typeorm.Column({ length: 145, type: "varchar", nullable: true })
     taille?: string;
 
     // Extension du fichier archivé (ex: pdf, jpg...)
-    @Column({ length: 145, type: "varchar", nullable: true })
+    @typeorm.Column({ length: 145, type: "varchar", nullable: true })
     extension?: string;
 
     // Date du document (ex: date d'émission du document archivé)
-    @Column({ type: "timestamp", nullable: true })
+    @typeorm.Column({ type: "timestamp", nullable: true })
     date?: Date;
 
     // url du dossier
-    @Column({ length: 145, type: "varchar", nullable: true })
+    @typeorm.Column({ length: 145, type: "varchar", nullable: true })
     url?: string;
 
     // Description libre du document archivé
-    @Column({ length: 145, type: "varchar", nullable: true })
+    @typeorm.Column({ length: 145, type: "varchar", nullable: true })
     description?: string;
 
     // metadonnée systeme
-    @CreateDateColumn()
+    @typeorm.CreateDateColumn()
     createdAt!: Date;
 
-    @UpdateDateColumn()
+    @typeorm.UpdateDateColumn()
     updatedAt!: Date;
 
     // date de suppression
-    @DeleteDateColumn()
+    @typeorm.DeleteDateColumn()
     deleteAt? : Date
 
     // identifiant de la personne qui a crée
-    @Column({type : "uuid", nullable : true})
+    @typeorm.Column({type : "uuid", nullable : true})
     createdBy? : string
 
     // identifiant de la personne qui a modifié
-    @Column({type : "uuid", nullable : true})
+    @typeorm.Column({type : "uuid", nullable : true})
     updatedBy? : string
 
     // identifiant de la personne qui a supprimé
-    @Column({type : "uuid", nullable : true})
+    @typeorm.Column({type : "uuid", nullable : true})
     deletedBy? : string
 }

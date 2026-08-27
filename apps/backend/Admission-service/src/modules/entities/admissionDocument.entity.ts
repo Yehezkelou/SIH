@@ -1,74 +1,67 @@
-import { Column, CreateDateColumn, DeleteDateColumn, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import * as typeorm from "typeorm";
 import { AdmissionDocumentType } from "./admission.enum";
 import { Admission } from "./admission.entity";
 
-
-
-
-
-@Entity("AdmissionDocument")
+@typeorm.Entity("AdmissionDocument")
 export class AdmissionDocument {
 
-    @PrimaryGeneratedColumn("uuid")
-    id!: string
+    @typeorm.PrimaryGeneratedColumn("uuid")
+    id!: string;
 
     // reference a l'admission
-    @Index()
-    @Column({type : "uuid"})
-    admissionId!: string
+    @typeorm.Index()
+    @typeorm.Column({type : "uuid"})
+    admissionId!: string;
 
-   
     // url
-    @Column({type : "varchar", length : 255, nullable : true})
-    documentUrl!: string
+    @typeorm.Column({type : "varchar", length : 255, nullable : true})
+    documentUrl!: string;
 
     // champ pour l'admission document
-    @Index()
-    @Column({type : "enum" , enum : AdmissionDocumentType})
-    documentType!: string
+    @typeorm.Index()
+    @typeorm.Column({type : "enum" , enum : AdmissionDocumentType})
+    documentType!: string;
 
     // nom du document 
-    @Index()
-    @Column({type : "varchar", length : 255, nullable : true})
-    documentName!: string
+    @typeorm.Index()
+    @typeorm.Column({type : "varchar", length : 255, nullable : true})
+    documentName!: string;
 
     // extension du document 
-    @Index()
-    @Column({type : "varchar", length : 255, nullable : true})
-    documentExtension!: string
+    @typeorm.Index()
+    @typeorm.Column({type : "varchar", length : 255, nullable : true})
+    documentExtension!: string;
 
     // taille du document 
-    @Index()
-    @Column({type : "integer", nullable : true})
-    documentSize!: number
+    @typeorm.Index()
+    @typeorm.Column({type : "integer", nullable : true})
+    documentSize!: number;
 
-    
-    @Index()
-    @Column({type : "timestamp", nullable : true})
-    attachedAt!: Date
+    @typeorm.Index()
+    @typeorm.Column({type : "timestamp", nullable : true})
+    attachedAt!: Date;
 
     // relation inverse 
-     @ManyToOne(() => Admission, ad => ad.documents)
-     @JoinColumn({name : "admissionId"})
-     admission!: Admission
+    @typeorm.ManyToOne(() => Admission, ad => ad.documents)
+    @typeorm.JoinColumn({name : "admissionId"})
+    admission!: typeorm.Relation<Admission>;
 
+    @typeorm.UpdateDateColumn()
+    updatedAt!: Date;
 
-     @UpdateDateColumn()
-     updatedAt!: Date
+    @typeorm.CreateDateColumn()
+    createdAt!: Date;
 
-     @CreateDateColumn()
-     createdAt!: Date
+    @typeorm.Column({length : 255, type : "varchar", nullable : true})
+    createdBy?: string;
 
-     @Column({length : 255, type : "varchar", nullable : true})
-     createdBy?: string
+    @typeorm.Column({length : 255, type : "varchar", nullable : true})
+    updatedBy?: string;
 
-     @Column({length : 255, type : "varchar", nullable : true})
-     updatedBy?: string
+    // Suppression douce
+    @typeorm.DeleteDateColumn()
+    deletedAt?: Date;
 
-     // Suppression douce : une piece jointe medico-legale n'est jamais supprimee physiquement
-     @DeleteDateColumn()
-     deletedAt?: Date
-
-     @Column({length : 255, type : "varchar", nullable : true})
-     deletedBy?: string
+    @typeorm.Column({length : 255, type : "varchar", nullable : true})
+    deletedBy?: string;
 }

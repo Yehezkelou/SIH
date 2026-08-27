@@ -1,4 +1,4 @@
-import { Column, CreateDateColumn, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn, Unique } from "typeorm";
+import * as typeorm from "typeorm";
 import { Role } from "./role.entity";
 import { Permission } from "./permission.entity";
 
@@ -8,32 +8,32 @@ import { Permission } from "./permission.entity";
  * Rattache une permission à un rôle. Entité explicite pour tracer l'octroi
  * (qui / quand) et permettre une future granularité (permission refusée, etc.).
  */
-@Entity("role_permissions")
-@Unique(["roleId", "permissionId"])
+@typeorm.Entity("role_permissions")
+@typeorm.Unique(["roleId", "permissionId"])
 export class RolePermission {
 
-    @PrimaryGeneratedColumn("uuid")
+    @typeorm.PrimaryGeneratedColumn("uuid")
     id!: string;
 
-    @Index()
-    @Column({ type: "uuid" })
+    @typeorm.Index()
+    @typeorm.Column({ type: "uuid" })
     roleId!: string;
 
-    @Index()
-    @Column({ type: "uuid" })
+    @typeorm.Index()
+    @typeorm.Column({ type: "uuid" })
     permissionId!: string;
 
-    @ManyToOne(() => Role, (role) => role.rolePermissions, { onDelete: "CASCADE" })
-    @JoinColumn({ name: "roleId" })
-    role?: Role;
+    @typeorm.ManyToOne(() => Role, (role) => role.rolePermissions, { onDelete: "CASCADE" })
+    @typeorm.JoinColumn({ name: "roleId" })
+    role?: typeorm.Relation<Role>;
 
-    @ManyToOne(() => Permission, (permission) => permission.rolePermissions, { onDelete: "CASCADE" })
-    @JoinColumn({ name: "permissionId" })
-    permission?: Permission;
+    @typeorm.ManyToOne(() => Permission, (permission) => permission.rolePermissions, { onDelete: "CASCADE" })
+    @typeorm.JoinColumn({ name: "permissionId" })
+    permission?: typeorm.Relation<Permission>;
 
-    @CreateDateColumn()
+    @typeorm.CreateDateColumn()
     grantedAt!: Date;
 
-    @Column({ length: 255, type: "varchar", nullable: true })
+    @typeorm.Column({ length: 255, type: "varchar", nullable: true })
     grantedBy?: string;
 }

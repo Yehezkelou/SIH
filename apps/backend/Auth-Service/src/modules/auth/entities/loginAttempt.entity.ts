@@ -32,7 +32,7 @@ export class LoginAttempt {
     status!: LoginAttemptStatus;
 
     @Index()
-    @Column({length : 255, type : "boolean", nullable : true})
+    @Column({ type : "boolean", nullable : true})
     success!: boolean
     
     @Column({ length: 255, type: "varchar", nullable: true })

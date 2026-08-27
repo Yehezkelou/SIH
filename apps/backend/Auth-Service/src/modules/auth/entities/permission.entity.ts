@@ -1,4 +1,4 @@
-import { Column, CreateDateColumn, Entity, Index, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import * as typeorm from "typeorm";
 import { PermissionAction } from "./auth.enum";
 import { RolePermission } from "./rolePermission.entity";
 
@@ -9,37 +9,37 @@ import { RolePermission } from "./rolePermission.entity";
  * les guards (ex: "patient:READ", "admission:CREATE", "user:MANAGE").
  * Une permission est reliée à plusieurs rôles via RolePermission.
  */
-@Entity("permissions")
+@typeorm.Entity("permissions")
 export class Permission {
 
-    @PrimaryGeneratedColumn("uuid")
+    @typeorm.PrimaryGeneratedColumn("uuid")
     id!: string;
 
     // Code unique de la permission, format "<ressource>:<action>"
-    @Index()
-    @Column({ length: 255, type: "varchar", unique: true, nullable: false })
+    @typeorm.Index()
+    @typeorm.Column({ length: 255, type: "varchar", unique: true, nullable: false })
     code!: string;
 
     // Ressource ciblée (ex: "patient", "admission", "user", "role")
-    @Index()
-    @Column({ length: 255, type: "varchar", nullable: false })
+    @typeorm.Index()
+    @typeorm.Column({ length: 255, type: "varchar", nullable: false })
     ressource!: string;
 
     // Verbe autorisé sur la ressource
-    @Column({ type: "enum", enum: PermissionAction })
+    @typeorm.Column({ type: "enum", enum: PermissionAction })
     action!: PermissionAction;
 
-    @Column({ type: "text", nullable: true })
+    @typeorm.Column({ type: "text", nullable: true })
     description?: string;
 
     // Relations
-    @OneToMany(() => RolePermission, (rolePermission) => rolePermission.permission)
-    rolePermissions?: RolePermission[];
+    @typeorm.OneToMany(() => RolePermission, (rolePermission) => rolePermission.permission)
+    rolePermissions?: typeorm.Relation<RolePermission[]>;
 
     // Métadonnées système
-    @CreateDateColumn()
+    @typeorm.CreateDateColumn()
     createdAt!: Date;
 
-    @UpdateDateColumn()
+    @typeorm.UpdateDateColumn()
     updatedAt!: Date;
 }

@@ -1,4 +1,4 @@
-import { Column, CreateDateColumn, DeleteDateColumn, Entity, Index, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm"
+import * as typeorm from "typeorm"
 import { ArchivDossier } from "./archivDossier.entity";
 
 
@@ -12,169 +12,169 @@ import { ArchivDossier } from "./archivDossier.entity";
  *
  * Référence : cahier_des_charges_patient_urgence.md - table `dossiers`
  */
-@Entity()
+@typeorm.Entity()
 export class Patient {
 
     // Identifiant technique interne (clé primaire), généré automatiquement
-    @PrimaryGeneratedColumn("uuid")
+    @typeorm.PrimaryGeneratedColumn("uuid")
     id!: string;
 
     // NDPU (numéro de dossier patient unique)
     // C'est l'identifiant "métier" du patient, celui qu'on montre/utilise au quotidien
-    @Index()
-    @Column({ length: 255, type: "varchar", unique: true, nullable: false })
+    @typeorm.Index()
+    @typeorm.Column({ length: 255, type: "varchar", unique: true, nullable: false })
     uniquePatientId!: string;
 
     // identifiant du dossier patient absorbé
-    @Column({type : "uuid", nullable : true})
+    @typeorm.Column({type : "uuid", nullable : true})
     mergeIntoPatientId?: string
 
     
     // ===== identité civile =====
 
-    @Index()
-    @Column({ length: 255, type: "varchar" })
+    @typeorm.Index()
+    @typeorm.Column({ length: 255, type: "varchar" })
     nom!: string;
 
-    @Index()
-    @Column({ length: 255, type: "varchar" })
+    @typeorm.Index()
+    @typeorm.Column({ length: 255, type: "varchar" })
     prenom!: string
 
-    @Index()
-    @Column({ type: "integer" })
+    @typeorm.Index()
+    @typeorm.Column({ type: "integer" })
     age!: number;
 
-    @Index()
-    @Column({ type: "enum", enum: ["M", "F"] })
+    @typeorm.Index()
+    @typeorm.Column({ type: "enum", enum: ["M", "F"] })
     genre!: "M" | "F";
 
     // Date de naissance : champ clé pour identifier/rapprocher un patient
     // (contrairement à "age" qui devient obsolète avec le temps)
-    @Index()
-    @Column({ type: "date", nullable: true })
+    @typeorm.Index()
+    @typeorm.Column({ type: "date", nullable: true })
     dateNaissance?: string;
 
     // Lieu de naissance (ville/commune), utile pour lever les doublons homonymes
-    @Column({ length: 255, type: "varchar", nullable: true })
+    @typeorm.Column({ length: 255, type: "varchar", nullable: true })
     lieuNaissance?: string;
 
     // lien entre le patient et ses dossiers
-    @OneToMany(() => ArchivDossier, (archivDossier) => archivDossier.patient)
-    archivDossier?: ArchivDossier[]
+    @typeorm.OneToMany(() => ArchivDossier, (archivDossier) => archivDossier.patient)
+    archivDossier?: typeorm.Relation<ArchivDossier[]>
 
 
 
     // ===== filiation =====
     // Utile pour identifier un patient mineur ou distinguer deux homonymes
-    @Index()
-    @Column({ length: 255, type: "varchar", nullable: true })
+    @typeorm.Index()
+    @typeorm.Column({ length: 255, type: "varchar", nullable: true })
     nomPere?: string;
 
-    @Index()
-    @Column({ length: 255, type: "varchar", nullable: true })
+    @typeorm.Index()
+    @typeorm.Column({ length: 255, type: "varchar", nullable: true })
     nomMere?: string;
 
-    @Index()
-    @Column({type: "varchar", length : 255, nullable : true})
+    @typeorm.Index()
+    @typeorm.Column({type: "varchar", length : 255, nullable : true})
     tuteur?: string
 
-    @Index()
-    @Column({length : 255, type : "varchar", nullable : true})
+    @typeorm.Index()
+    @typeorm.Column({length : 255, type : "varchar", nullable : true})
     numeroPere? : string
 
-    @Index()
-    @Column({length : 255, type : "varchar", nullable : true})
+    @typeorm.Index()
+    @typeorm.Column({length : 255, type : "varchar", nullable : true})
     numeroMere? : string
 
-    @Index()
-    @Column({length : 255, type : "varchar", nullable : true})
+    @typeorm.Index()
+    @typeorm.Column({length : 255, type : "varchar", nullable : true})
     numeroTuteur? : string
 
     // ===== donné de contact =====
-    @Index()
-    @Column({ length: 255, type: "varchar" , nullable : true})
+    @typeorm.Index()
+    @typeorm.Column({ length: 255, type: "varchar" , nullable : true})
     email?: string
 
     // Numéro de téléphone principal du patient
-    @Index()
-    @Column({ length: 255, type: "varchar" , nullable : true})
+    @typeorm.Index()
+    @typeorm.Column({ length: 255, type: "varchar" , nullable : true})
     numero?: string
 
     // Numéro de téléphone secondaire (facultatif)
-    @Column({ length: 255, type: "varchar", nullable: true })
+    @typeorm.Column({ length: 255, type: "varchar", nullable: true })
     numeroSecondaire?: string;
 
     // Contact à joindre en cas d'urgence (parent, tuteur, proche...)
-    @Column({ length: 255, type: "varchar", nullable: true })
+    @typeorm.Column({ length: 255, type: "varchar", nullable: true })
     contactUrgence?: string;
 
     // identifiant unique
-    @Index()
-    @Column({ length: 255, type: "varchar", unique: true , nullable : true})
+    @typeorm.Index()
+    @typeorm.Column({ length: 255, type: "varchar", unique: true , nullable : true})
     numSecuSocial?: string
 
-    @Index()
-    @Column({ length: 255, type: "varchar", unique: true , nullable : true})
+    @typeorm.Index()
+    @typeorm.Column({ length: 255, type: "varchar", unique: true , nullable : true})
     numIdentityNational?: string
 
-    @Index()
-    @Column({ length: 255, type: "varchar", unique: true , nullable : true})
+    @typeorm.Index()
+    @typeorm.Column({ length: 255, type: "varchar", unique: true , nullable : true})
     numeroPassport?: string
 
-    @Index()
-    @Column({ length: 255, type: "varchar", unique: true , nullable : true})
+    @typeorm.Index()
+    @typeorm.Column({ length: 255, type: "varchar", unique: true , nullable : true})
     numCMU?: string
 
     // champs concernant les dossier provisoir 
-    @Column({type : "enum", enum : ["PROVISOIRE", "DEFINITIF"],  default: "DEFINITIF"})
+    @typeorm.Column({type : "enum", enum : ["PROVISOIRE", "DEFINITIF"],  default: "DEFINITIF"})
     statusDossier! : "PROVISOIRE" | "DEFINITIF"
 
     // motif du provisoir 
-    @Column({type : "enum", enum : ["URGENCE_VITAL", "PATIENT_INCONSCIENT", "IDENTITE_INCONNUE", "MINEUR_NON_ACCOMPAGNE", "PANNE_SYSTEME", "AUTRE"], nullable : true})
+    @typeorm.Column({type : "enum", enum : ["URGENCE_VITAL", "PATIENT_INCONSCIENT", "IDENTITE_INCONNUE", "MINEUR_NON_ACCOMPAGNE", "PANNE_SYSTEME", "AUTRE"], nullable : true})
     motifDossierProvisoire? : "URGENCE_VITAL" | "PATIENT_INCONSCIENT" | "IDENTITE_INCONNUE" | "MINEUR_NON_ACCOMPAGNE" | "PANNE_SYSTEME" | "AUTRE"
 
     // service a l'origine de la creation 
-    @Column({type : "varchar", length : 255, nullable : true})
+    @typeorm.Column({type : "varchar", length : 255, nullable : true})
     serviceCreation!: string
 
     // quelque motif pour identifier le patient inconscient/inconnu 
-    @Column({type : "text", nullable : true})
+    @typeorm.Column({type : "text", nullable : true})
     signalement!: string
 
     // date limite de regularisation 
-    @Column({type : "timestamp", nullable : true})
+    @typeorm.Column({type : "timestamp", nullable : true})
     dateLimiteRegulation!: Date
 
     // date de regularisation 
-    @Column({type : "timestamp", nullable : true})
+    @typeorm.Column({type : "timestamp", nullable : true})
     regularisAt!: Date 
 
     // utilisateur qui a fait la regularisation 
-    @Column({type : "varchar", length : 255, nullable : true})
+    @typeorm.Column({type : "varchar", length : 255, nullable : true})
     regularisBy!: string
 
     // metadonnée systeme
-    @CreateDateColumn()
+    @typeorm.CreateDateColumn()
     createdAt!: Date;
 
-    @UpdateDateColumn()
+    @typeorm.UpdateDateColumn()
     updatedAt!: Date;
 
     // Utilisateur/compte à l'origine de la création du dossier
-    @Column({ length: 255, type: "varchar", nullable: true })
+    @typeorm.Column({ length: 255, type: "varchar", nullable: true })
     createdBy!: string
 
     // Utilisateur/compte à l'origine de la dernière modification du dossier
-    @Column({ length: 255, type: "varchar", nullable: true })
+    @typeorm.Column({ length: 255, type: "varchar", nullable: true })
     updatedBy?: string;
 
     // Suppression douce (soft delete) : un dossier patient n'est jamais
     // supprimé physiquement, on le marque juste comme "supprimé" à cette date.
     // TypeORM ignore automatiquement les lignes où deletedAt est renseigné.
-    @DeleteDateColumn()
+    @typeorm.DeleteDateColumn()
     deletedAt?: Date;
 
     // Utilisateur/compte à l'origine de la suppression du dossier
-    @Column({ length: 255, type: "varchar", nullable: true })
+    @typeorm.Column({ length: 255, type: "varchar", nullable: true })
     deletedBy?: string;
 }

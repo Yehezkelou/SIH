@@ -1,63 +1,58 @@
-import { Column, CreateDateColumn, DeleteDateColumn, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import * as typeorm from "typeorm";
 import { Admission } from "./admission.entity";
 import { Relationship } from "./admission.enum";
 
-
-
-
-@Entity("admissionCompanion")
+@typeorm.Entity("admissionCompanion")
 export class AdmissionCompanion {
-    @PrimaryGeneratedColumn('uuid')
-    id!: string
+    @typeorm.PrimaryGeneratedColumn('uuid')
+    id!: string;
 
     // reference a l'admission
-    @Index()
-    @Column({type : "uuid"})
-    admissionId!: string
+    @typeorm.Index()
+    @typeorm.Column({type : "uuid"})
+    admissionId!: string;
 
-    @Index()
-    @Column({type : "varchar", length : 255, nullable : true})
-    firstName!: string
+    @typeorm.Index()
+    @typeorm.Column({type : "varchar", length : 255, nullable : true})
+    firstName!: string;
 
-    @Index()
-    @Column({type : "varchar", length : 255, nullable : true})
-    lastName!: string
+    @typeorm.Index()
+    @typeorm.Column({type : "varchar", length : 255, nullable : true})
+    lastName!: string;
 
-    @Index()
-    @Column({type : "varchar", length : 255, nullable : true})
-    phoneNumber!: string
+    @typeorm.Index()
+    @typeorm.Column({type : "varchar", length : 255, nullable : true})
+    phoneNumber!: string;
 
+    @typeorm.Index()
+    @typeorm.Column({type : "enum", enum : Relationship, nullable : true})
+    relationship!: Relationship;
 
-    @Index()
-    @Column({type : "enum", enum : Relationship, nullable : true})
-    relationship!: Relationship
-
-    @Index()
-    @Column({type : "varchar", length : 255, nullable : true})
-    address!: string
+    @typeorm.Index()
+    @typeorm.Column({type : "varchar", length : 255, nullable : true})
+    address!: string;
 
     // relation inverse
-    @ManyToOne(() => Admission, ad => ad.companions)
-    @JoinColumn({name : "admissionId"})
-    admission!: Admission
+    @typeorm.ManyToOne(() => Admission, ad => ad.companions)
+    @typeorm.JoinColumn({name : "admissionId"})
+    admission!: typeorm.Relation<Admission>;
 
-    @CreateDateColumn()
-    createdAt!: Date
+    @typeorm.CreateDateColumn()
+    createdAt!: Date;
 
-    @UpdateDateColumn()
-    updatedAt!: Date
+    @typeorm.UpdateDateColumn()
+    updatedAt!: Date;
 
-    @Column({length : 255, type : "varchar", nullable : true})
-    createdBy?: string
+    @typeorm.Column({length : 255, type : "varchar", nullable : true})
+    createdBy?: string;
 
-    @Column({length : 255, type : "varchar", nullable : true})
-    updatedBy?: string
+    @typeorm.Column({length : 255, type : "varchar", nullable : true})
+    updatedBy?: string;
 
-    // Suppression douce : conserve la trace d'un accompagnant retire
-    @DeleteDateColumn()
-    deletedAt?: Date
+    // Suppression douce
+    @typeorm.DeleteDateColumn()
+    deletedAt?: Date;
 
-    @Column({length : 255, type : "varchar", nullable : true})
-    deletedBy?: string
-
+    @typeorm.Column({length : 255, type : "varchar", nullable : true})
+    deletedBy?: string;
 }

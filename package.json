@@ -5,7 +5,10 @@
   "scripts": {
     "dev": "nx run-many -t serve",
     "dev:patient": "nx serve @org/Patient-Identity-Service",
-    "dev:admission": "nx servce @org/Admission-service",
+    "dev:admission": "nx serve @org/Admission-service",
+    "dev:api-gateway" : "nx serve @org/api-gateway",
+    "dev:auth-service" : "nx serve @org/Auth-Service",
+    "dev:all" : "pnpm run dev:patient & pnpm run dev:admission & pnpm run dev:api-gateway & pnpm run dev:auth-service",
     "graph": "nx graph"
   },
   "private": true,

@@ -1,111 +1,94 @@
-import {Column, CreateDateColumn, DeleteDateColumn, Entity, Index, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn} from "typeorm"
-import { AdmissionStatus, AdmissionType } from "./admission.enum"
-import { AdmissionDocument } from "./admissionDocument.entity"
-import { AdmissionCompanion } from "./admissionCompanion.entity"
-import { AdmissionPayer } from "./admissionPayer.entity"
-import { Encounter } from "./encounter.entity"
+import * as typeorm from "typeorm";
+import { AdmissionStatus, AdmissionType } from "./admission.enum";
+import { AdmissionDocument } from "./admissionDocument.entity";
+import { AdmissionCompanion } from "./admissionCompanion.entity";
+import { AdmissionPayer } from "./admissionPayer.entity";
+import { Encounter } from "./encounter.entity";
 
-
-
-
-
-@Entity("admission")
+@typeorm.Entity("admission")
 export class Admission {
 
-    @PrimaryGeneratedColumn("uuid")
-    id!: string
+    @typeorm.PrimaryGeneratedColumn("uuid")
+    id!: string;
 
     // reference vers le microservice Patient-Identity-Service
-    @Index()
-    @Column({type : "uuid"})
-    patientId!: string
+    @typeorm.Index()
+    @typeorm.Column({type : "uuid"})
+    patientId!: string;
 
     // reference numero du patient 
-    @Index()
-    @Column({type : "string"})
-    numeroPatient!: string
+    @typeorm.Index()
+    @typeorm.Column({type : "varchar"})
+    numeroPatient!: string;
 
+    // numero d'admission lisible
+    @typeorm.Index()
+    @typeorm.Column({type : "varchar", length : 255, unique : true, nullable : true})
+    admissionNumber!: string;
 
-    // numero d'admission lisible (equivalent de Patient.uniquePatientId),
-    // utilise par le personnel pour reference papier/telephonique/facturation
-    @Index()
-    @Column({type : "varchar", length : 255, unique : true, nullable : true})
-    admissionNumber!: string
-
-    @Index()
-    @Column({type : "uuid", nullable : true})
-    doctorId!: string
+    @typeorm.Index()
+    @typeorm.Column({type : "uuid", nullable : true})
+    doctorId!: string;
 
     // champ propre a l'admission
-    @Index()
-    @Column({type : "enum", enum : AdmissionType, nullable : false})
-    admissionType!: string
+    @typeorm.Index()
+    @typeorm.Column({type : "enum", enum : AdmissionType, nullable : false})
+    admissionType!: string;
 
-    @Index()
-    @Column({type : "enum", enum : AdmissionStatus, default : AdmissionStatus.PENDING})
-    admissionStatus!: string
+    @typeorm.Index()
+    @typeorm.Column({type : "enum", enum : AdmissionStatus, default : AdmissionStatus.PENDING})
+    admissionStatus!: string;
 
-    @Index()
-    @Column({type : "text", nullable : true})
-    reason!: string
-
+    @typeorm.Index()
+    @typeorm.Column({type : "text", nullable : true})
+    reason!: string;
 
     // Date 
-    @Index()
-    @Column({type : "timestamp", nullable : true})
-    admissionDate!: Date
+    @typeorm.Index()
+    @typeorm.Column({type : "timestamp", nullable : true})
+    admissionDate!: Date;
 
-    @Index()
-    @Column({type : "timestamp", nullable : true})
-    expectedDischarge!: Date
+    @typeorm.Index()
+    @typeorm.Column({type : "timestamp", nullable : true})
+    expectedDischarge!: Date;
 
-    @Index()
-    @Column({type : "timestamp", nullable : true})
-    actualDischarge!: Date 
+    @typeorm.Index()
+    @typeorm.Column({type : "timestamp", nullable : true})
+    actualDischarge!: Date;
 
     // Audit 
-    @CreateDateColumn()
-    createdAt!: Date
+    @typeorm.CreateDateColumn()
+    createdAt!: Date;
 
-    @UpdateDateColumn()
-    updatedAt!: Date
+    @typeorm.UpdateDateColumn()
+    updatedAt!: Date;
 
     // Utilisateur/compte a l'origine de la creation de l'admission
-    @Column({length : 255, type : "uuid", nullable : true})
-    createdBy?: string
+    @typeorm.Column({type : "uuid", nullable : true})
+    createdBy?: string;
 
     // Utilisateur/compte a l'origine de la derniere modification
-    @Column({length : 255, type : "uuid", nullable : true})
-    updatedBy?: string
+    @typeorm.Column({type : "uuid", nullable : true})
+    updatedBy?: string;
 
-    // Suppression douce : un dossier d'admission n'est jamais supprime
-    // physiquement (piece medico-legale), il est seulement marque supprime.
-    @DeleteDateColumn()
-    deletedAt?: Date
+    // Suppression douce
+    @typeorm.DeleteDateColumn()
+    deletedAt?: Date;
 
     // Utilisateur/compte a l'origine de la suppression
-    @Column({length : 255, type : "uuid", nullable : true})
-    deletedBy?: string
+    @typeorm.Column({type : "uuid", nullable : true})
+    deletedBy?: string;
 
-    // Relation au sein du meme microservice
+    // Relations
+    @typeorm.OneToMany(() => AdmissionDocument, (doc) => doc.admission)
+    documents!: typeorm.Relation<AdmissionDocument[]>;
 
-    // relation one to many avec les documents
-    @OneToMany(() => AdmissionDocument, (doc) => doc.admission)
-    documents!: AdmissionDocument[]
+    @typeorm.OneToMany(() => AdmissionCompanion, comp => comp.admission)
+    companions!: typeorm.Relation<AdmissionCompanion[]>;
 
-    // relation one to many avec les compagnons
-    @OneToMany(() => AdmissionCompanion, comp => comp.admission)
-    companions!: AdmissionCompanion[]
+    @typeorm.OneToMany(() =>  AdmissionPayer, payer => payer.admission)
+    payers!: typeorm.Relation<AdmissionPayer[]>;
 
-    // relation one to many avec les payeurs
-    // parce que il peut avoir plusieur payeur (patient, assurance, entreprise)
-    @OneToMany(() =>  AdmissionPayer, payer => payer.admission)
-    payers!: AdmissionPayer[]
-
-
-    // relation one to one avec encounter (Encounter porte la colonne admissionId)
-    @OneToOne(() => Encounter, encounter => encounter.admission)
-    encounters!: Encounter
-    
+    @typeorm.OneToOne(() => Encounter, encounter => encounter.admission)
+    encounters!: typeorm.Relation<Encounter>;
 }
-

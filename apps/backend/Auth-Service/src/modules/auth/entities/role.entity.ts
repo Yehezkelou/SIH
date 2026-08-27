@@ -1,4 +1,4 @@
-import { Column, CreateDateColumn, DeleteDateColumn, Entity, Index, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import * as typeorm from "typeorm";
 import { UserRole } from "./userRole.entity";
 import { RolePermission } from "./rolePermission.entity";
 
@@ -9,51 +9,51 @@ import { RolePermission } from "./rolePermission.entity";
  * utilisateurs (ex: ROLE_MEDECIN, ROLE_AGENT_ADMISSION, ROLE_ADMIN).
  * Un utilisateur peut cumuler plusieurs rôles (relation via UserRole).
  */
-@Entity("roles")
+@typeorm.Entity("roles")
 export class Role {
 
-    @PrimaryGeneratedColumn("uuid")
+    @typeorm.PrimaryGeneratedColumn("uuid")
     id!: string;
 
     // Code technique unique et stable (ex: "ROLE_ADMIN"), utilisé dans le code
-    @Index()
-    @Column({ length: 255, type: "varchar", unique: true, nullable: false })
+    @typeorm.Index()
+    @typeorm.Column({ length: 255, type: "varchar", unique: true, nullable: false })
     code!: string;
 
     // Libellé lisible affiché dans l'interface (ex: "Agent d'admission")
-    @Column({ length: 255, type: "varchar", nullable: false })
+    @typeorm.Column({ length: 255, type: "varchar", nullable: false })
     libelle!: string;
 
-    @Column({ type: "text", nullable: true })
+    @typeorm.Column({ type: "text", nullable: true })
     description?: string;
 
     // Rôle système (livré par défaut) : non supprimable par un administrateur
-    @Column({ type: "boolean", default: false })
+    @typeorm.Column({ type: "boolean", default: false })
     isSystem!: boolean;
 
     // Relations
-    @OneToMany(() => UserRole, (userRole) => userRole.role)
-    userRoles?: UserRole[];
+    @typeorm.OneToMany(() => UserRole, (userRole) => userRole.role)
+    userRoles?: typeorm.Relation<UserRole[]>;
 
-    @OneToMany(() => RolePermission, (rolePermission) => rolePermission.role)
-    rolePermissions?: RolePermission[];
+    @typeorm.OneToMany(() => RolePermission, (rolePermission) => rolePermission.role)
+    rolePermissions?: typeorm.Relation<RolePermission[]>;
 
     // Métadonnées système
-    @CreateDateColumn()
+    @typeorm.CreateDateColumn()
     createdAt!: Date;
 
-    @UpdateDateColumn()
+    @typeorm.UpdateDateColumn()
     updatedAt!: Date;
 
-    @Column({ length: 255, type: "varchar", nullable: true })
+    @typeorm.Column({ length: 255, type: "varchar", nullable: true })
     createdBy?: string;
 
-    @Column({ length: 255, type: "varchar", nullable: true })
+    @typeorm.Column({ length: 255, type: "varchar", nullable: true })
     updatedBy?: string;
 
-    @DeleteDateColumn()
+    @typeorm.DeleteDateColumn()
     deletedAt?: Date;
 
-    @Column({ length: 255, type: "varchar", nullable: true })
+    @typeorm.Column({ length: 255, type: "varchar", nullable: true })
     deletedBy?: string;
 }

@@ -1,5 +1,5 @@
 import { CanActivate, ExecutionContext, Injectable } from "@nestjs/common";
-import type { JwtService } from "@nestjs/jwt";
+import { JwtService } from "@nestjs/jwt";
 import { Metadata, status } from "@grpc/grpc-js";
 import { RpcException } from "@nestjs/microservices";
 import { PinoLogger } from "nestjs-pino";

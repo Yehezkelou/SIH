@@ -88,7 +88,7 @@ export class AppModule implements NestModule {
             }
           })
         )
-        .forRoutes(route.prefix);
+        .forRoutes(route.prefix, route.prefix + "/*");
     }
   }
 }

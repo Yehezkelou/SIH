@@ -7,7 +7,7 @@ import { SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {bodyParser : false});
-  const globalPrefix = 'api';
+
 
 
   // utilisation du logger pino 
@@ -26,9 +26,6 @@ async function bootstrap() {
   })
 
 
-  app.setGlobalPrefix(globalPrefix, {
-    exclude : ['health', 'docs']
-  });
 
   // Configuration Swagger agrégée
   if (process.env.NODE_ENV !== 'production') {
@@ -54,7 +51,7 @@ async function bootstrap() {
   const port = process.env.PORT || 8080;
   await app.listen(port);
 
-  Logger.log(`🚀 API Gateway is running on: http://localhost:${port}/${globalPrefix}`);
+  Logger.log(`🚀 API Gateway is running on: http://localhost:${port}`);
   Logger.log(`📄 Documentation Swagger disponible sur: http://localhost:${port}/docs`);
 }
 

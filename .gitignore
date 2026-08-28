@@ -55,3 +55,6 @@ certs/*.key
 certs/*.crt
 certs/*.srl
 
+# Next.js
+.next
+out

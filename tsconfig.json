@@ -38,6 +38,9 @@
     },
     {
       "path": "./apps/backend/api-gateway"
+    },
+    {
+      "path": "./apps/frontend/auth-service"
     }
   ]
 }

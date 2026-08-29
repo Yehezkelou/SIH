@@ -1,51 +1,29 @@
 import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
-import { APP_GUARD } from '@nestjs/core';
-import { ThrottlerModule } from '@nestjs/throttler';
 import { createProxyMiddleware } from 'http-proxy-middleware';
 import { AuthModule } from './auth/auth.module';
-import { GatewayAuthGuard } from './auth/gateway-auth.guard';
+import { GatewayAuthMiddleware } from './auth/gateway-auth.middleware';
 import { LoggerModuleGlobale } from '../../../../../libs/logger/src/index';
 import { routesConfig } from './config/routes.config';
+import { CorsMiddleware } from './shared/middleware/cors.middleware';
 import { CorrelationIdMiddleware } from './shared/middleware/correlation-id.middleware';
+import { RateLimitMiddleware } from './shared/middleware/rate-limit.middleware';
 import { HealthModule } from './health/health.module';
-import { GatewayThrottlerGuard } from './shared/guards/gateway-throttler.guard';
 
 @Module({
   imports: [
     LoggerModuleGlobale.forRoot('ApiGateway'),
     AuthModule,
     HealthModule,
-    // Configuration des deux profils de rate limiting
-    ThrottlerModule.forRoot([
-      {
-        name: 'global',
-        ttl: Number(process.env.THROTTLE_TTL) || 60,
-        limit: Number(process.env.THROTTLE_LIMIT) || 100,
-      },
-      {
-        name: 'login',
-        ttl: 60, // 1 minute
-        limit: 5,  // Max 5 requêtes
-      }
-    ])
-  ],
-  providers: [
-    // 1. Protection contre les abus (Rate Limit) s'exécute en premier
-    {
-      provide: APP_GUARD,
-      useClass: GatewayThrottlerGuard,
-    },
-    // 2. Validation du jeton et permissions (Auth) s'exécute en second
-    {
-      provide: APP_GUARD,
-      useClass: GatewayAuthGuard,
-    },
   ],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
+    // IMPORTANT : le proxy termine la requête au niveau middleware, avant la
+    // couche des guards NestJS. Toute la sécurité doit donc être appliquée en
+    // middleware, AVANT le proxy, dans cet ordre :
+    //   1. CORS (+ préflight)  2. Correlation-id  3. Rate limiting  4. Auth  5. Proxy
     consumer
-      .apply(CorrelationIdMiddleware)
+      .apply(CorsMiddleware, CorrelationIdMiddleware, RateLimitMiddleware, GatewayAuthMiddleware)
       .forRoutes('*');
 
     for (const route of routesConfig) {
@@ -56,6 +34,11 @@ export class AppModule implements NestModule {
             changeOrigin: true,
             timeout: 10000,
             proxyTimeout: 10000,
+            // Le middleware est monté sur route.prefix : http-proxy-middleware
+            // ne verrait que le chemin relatif (ex. "/login"). On réémet le
+            // chemin complet d'origine pour que le microservice le reçoive
+            // avec son préfixe (ex. "/api/auth/login").
+            pathRewrite: (_path, req: any) => req.originalUrl,
             on: {
               proxyReq: (proxyReq, req: any) => {
                 if (req.headers.authorization) {

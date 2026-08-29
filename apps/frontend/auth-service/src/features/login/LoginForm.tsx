@@ -41,7 +41,7 @@ export function LoginForm(){
     }
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-4 w-full max-w-md bg-white p-8 rounded-xl shadow-md border border-gray-100">
+        <form onSubmit={handleSubmit} className="space-y-4 w-full max-w-md bg-green-50 p-8 rounded-xl shadow-md border border-gray-100">
             <h2 className="text-2xl font-bold text-gray-800 text-center mb-6">Formulaire de connexion</h2>
             {errorMessage && <Alert type="error" message={errorMessage} />}
             <div>

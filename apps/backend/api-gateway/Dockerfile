@@ -21,7 +21,9 @@ WORKDIR /app
 
 COPY --from=builder /app/apps/backend/api-gateway/dist ./dist
 COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/libs ./libs  
+COPY --from=builder /app/libs ./libs
+# Certificats mTLS lus au démarrage par auth.module.ts (certs/ca.crt, client.key, client.crt)
+COPY --from=builder /app/certs ./certs
 
 ENV PORT=8080
 ENV NODE_ENV=production

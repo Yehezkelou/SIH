@@ -1,0 +1,68 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ==========================================================================
+   Design tokens — Panel Admin SIH (cf. docs/ADMIN_PANEL.md §7)
+   Toutes les couleurs passent par des variables CSS => bascule de thème
+   sans toucher aux composants.
+   ========================================================================== */
+
+:root {
+  /* Marque / dégradé sidebar */
+  --brand-600: #2F6BFF; /* primaire (boutons pleins) */
+  --brand-500: #4A90E2; /* hover/actif clair */
+  --brand-400: #6C8CF5;
+  --sidebar-from: #5A78F0; /* haut du dégradé */
+  --sidebar-to: #38C6E8; /* bas du dégradé */
+
+  /* Accents & sémantique */
+  --accent-teal: #22C9C3; /* badges "planifié/validé" */
+  --accent-amber: #F5A623; /* highlight, avatar */
+  --link: #3BA9E0; /* liens (tel, médecin) */
+  --success: #22C55E;
+  --warning: #F59E0B;
+  --danger: #EF4444;
+  --info: #3B82F6;
+
+  /* Surfaces & texte (thème clair) */
+  --bg: #EEF1F7;
+  --surface: #FFFFFF;
+  --surface-2: #F6F8FC;
+  --border: #E4E9F2;
+  --text: #1F2433;
+  --text-muted: #8A94A6;
+
+  /* Rayons, ombres */
+  --radius-sm: 8px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --shadow-card: 0 8px 24px rgba(31, 36, 51, 0.06);
+  --shadow-pop: 0 12px 32px rgba(31, 36, 51, 0.12);
+}
+
+/* Thème sombre : [data-theme="dark"] sur <html> */
+:root[data-theme='dark'] {
+  --brand-600: #4C7DFF;
+  --brand-500: #5B8CFF;
+  --sidebar-from: #2B3B7A;
+  --sidebar-to: #1D6E8C;
+
+  --accent-teal: #2DD4CE;
+  --link: #5CC0F0;
+
+  --bg: #0F1420;
+  --surface: #171E2E;
+  --surface-2: #1F2838;
+  --border: #2A3346;
+  --text: #E7ECF5;
+  --text-muted: #9AA6BC;
+
+  --shadow-card: 0 8px 24px rgba(0, 0, 0, 0.35);
+  --shadow-pop: 0 12px 32px rgba(0, 0, 0, 0.5);
+}
+
+html,
+body {
+  height: 100%;
+}

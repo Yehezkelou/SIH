@@ -18,12 +18,8 @@ async function bootstrap() {
     contentSecurityPolicy : process.env.NODE_ENV === "production" ? undefined : false,
   }))
 
-  // configuration CORS
-  app.enableCors({
-    origin : process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',') : ['*'],
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    credentials: true,
-  })
+  // CORS géré par CorsMiddleware (en tête de chaîne, cf. gateway.module.ts),
+  // pour garantir qu'il s'exécute avant le proxy et répond à la préflight.
 
 
 

@@ -3,7 +3,7 @@ import { NextResponse } from "next/server"
 
 const IS_PUBLIC_ROOT = ["/login", "/forgot-password", "/reset-password"]
 
-export function middleware(request : NextRequest){
+export default function middleware(request : NextRequest){
 
     const {pathname} = request.nextUrl
 

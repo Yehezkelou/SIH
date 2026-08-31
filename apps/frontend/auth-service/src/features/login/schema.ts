@@ -5,6 +5,11 @@ export interface LoginTypeInput {
     password : string;
 }
 
+export interface LoginTypeInputPin {
+    pin : string;
+    identifier : string;
+}
+
 // interface pour la reponse 
 export interface User {
     id : string;

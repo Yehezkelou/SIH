@@ -1,7 +1,12 @@
 import { apiClient } from "@/lib/api-client";
-import { LoginTypeInput, LoginTypeReponss } from "../schema";
+import { LoginTypeInput, LoginTypeInputPin, LoginTypeReponss } from "../schema";
 
-export async function LoginRequest(credentials : LoginTypeInput) : Promise<LoginTypeReponss> {
+export async function LoginRequestPassword(credentials : LoginTypeInput) : Promise<LoginTypeReponss> {
     const response = await apiClient.post<LoginTypeReponss>("/api/auth/login", credentials);
     return response.data;
+}
+
+export async function LoginRequestPin(credentials : LoginTypeInputPin) : Promise<LoginTypeReponss>{
+    const response = await apiClient.post<LoginTypeReponss>("/api/auth/login-pin", credentials)
+    return response.data
 }

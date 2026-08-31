@@ -1,5 +1,4 @@
 import React from 'react';
-import illustrationImg from '../../../public/image/pexels-steve-28494623.jpg';
 
 export default function AuthLayout({
   children,
@@ -7,19 +6,22 @@ export default function AuthLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="relative min-h-screen w-full flex items-center justify-center p-4 overflow-hidden">
-      {/* Image de fond remplissant toute la page */}
-      <img
-        src={illustrationImg.src}
-        alt="Illustration"
-        className="absolute inset-0 w-full h-full object-cover -z-10"
-      />
-
-      {/* Voile assombrissant optionnel pour faire ressortir le formulaire */}
-      <div className="absolute inset-0 bg-black/30 backdrop-blur-[2px] -z-10" />
+    <div className="relative min-h-screen w-full flex items-center 
+        justify-center p-4 overflow-hidden
+        bg-gradient-to-br from-sky-50 via-blue-50 to-indigo-100
+        dark:bg-gradient-to-br dark:from-slate-950 dark:via-[#070d19] dark:to-black">
+      {/* Lueur bleue diffuse au centre derrière le formulaire */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 
+      bg-blue-400/5 
+      w-[600px] h-[600px] dark:bg-blue-600/15 rounded-full blur-[140px] -z-10" />
+      
+      {/* Deuxième lueur violette/indigo décalée pour enrichir le dégradé */}
+      <div className="absolute top-1/4 left-1/3 w-[400px] h-[400px]
+      bg-indigo-500/5 
+       dark:bg-indigo-500/10 rounded-full blur-[120px] -z-10" />
 
       {/* Formulaire parfaitement centré au milieu */}
-      <div className="relative z-10 w-full max-w-md">
+      <div className="relative w-full flex items-center justify-center">
         {children}
       </div>
     </div>

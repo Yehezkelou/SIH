@@ -67,6 +67,10 @@ export class UserSubscriber implements EntitySubscriberInterface<User> {
     async afterUpdate(event: UpdateEvent<User>) {
         const newEntity = event.entity as User | undefined;
 
+        if (!event.databaseEntity) {
+            return;
+        }
+
         await this.saveHistory(
             event.manager,
             event.databaseEntity.id,

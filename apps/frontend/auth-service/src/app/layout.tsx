@@ -1,6 +1,7 @@
 import './global.css'
 import React from 'react'
 import Providers from './providers';
+import { ThemeProvider } from '@/components/ThemeProvider';
 
 
 export const metadata = {
@@ -14,11 +15,13 @@ export default function RootLayout({
     children : React.ReactNode
 }) {
     return (
-        <html lang='fr' className="h-full">
+        <html lang='fr' className="h-full" suppressHydrationWarning>
             <body className='h-full bg-gray-50 text-gray-900 antialiased'>
-                <Providers>
-                    {children}
-                </Providers>
+                <ThemeProvider attribute="class" defaultTheme='system' enableSystem>
+                    <Providers>
+                        {children}
+                    </Providers>
+                </ThemeProvider>
             </body>
         </html>
     )

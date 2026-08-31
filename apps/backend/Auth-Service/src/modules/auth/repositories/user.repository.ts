@@ -17,13 +17,22 @@ export class UserRepository extends Repository<User> {
 
     // recherche par ID, email ou matricule
     async findByIdentifier(identifier: string) {
-        return await this.createQueryBuilder("user")
+        const query = this.createQueryBuilder("user")
             .addSelect(["user.passwordHash", "user.pinHash", "user.mfaSecret"])
-            .leftJoinAndSelect("user.userRoles", "role")
+            .leftJoinAndSelect("user.userRoles", "userRole")
+            .leftJoinAndSelect("userRole.role", "role")
             .leftJoinAndSelect("role.rolePermissions", "rolePermission")
-            .leftJoinAndSelect("rolePermission.permission", "permission")
-            .where("user.id = :identifier OR user.email = :identifier OR user.matricule = :identifier", { identifier })
-            .getOne();
+            .leftJoinAndSelect("rolePermission.permission", "permission");
+
+        const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(identifier);
+
+        if (isUuid) {
+            query.where("user.id = :identifier", { identifier });
+        } else {
+            query.where("user.email = :identifier OR user.matricule = :identifier", { identifier });
+        }
+
+        return await query.getOne();
     }
 
     // verification d'unicite email ou matricule

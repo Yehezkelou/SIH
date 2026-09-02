@@ -6,19 +6,7 @@ interface Counter {
     resetAt: number;
 }
 
-/**
- * Rate limiting sous forme de MIDDLEWARE (et non de guard).
- *
- * Comme pour l'authentification, le proxy termine la requête avant la couche
- * des guards NestJS : un `ThrottlerGuard` ne protégerait donc jamais les routes
- * proxifiées. Fenêtre fixe en mémoire, à parité avec l'ancien `ThrottlerModule`
- * (in-memory, mono-instance). Pour plusieurs répliques, prévoir un store partagé
- * (Redis) via `express-rate-limit` + `rate-limit-redis`.
- *
- * Deux profils, dans l'esprit de l'ancienne configuration :
- *  - "login" : strict, uniquement sur POST /api/auth/login
- *  - "global" : standard, sur toutes les routes
- */
+
 @Injectable()
 export class RateLimitMiddleware implements NestMiddleware {
     private readonly globalStore = new Map<string, Counter>();

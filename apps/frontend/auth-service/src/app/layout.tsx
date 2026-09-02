@@ -2,7 +2,13 @@ import './global.css'
 import React from 'react'
 import Providers from './providers';
 import { ThemeProvider } from '@/components/ThemeProvider';
+import {Poppins} from "next/font/google"
 
+const poppins = Poppins({
+    subsets : ["latin"],
+    weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
+    variable: "--font-sans"
+})
 
 export const metadata = {
     title : "SIH - Portail d'authentification",
@@ -15,8 +21,8 @@ export default function RootLayout({
     children : React.ReactNode
 }) {
     return (
-        <html lang='fr' className="h-full" suppressHydrationWarning>
-            <body className='h-full bg-gray-50 text-gray-900 antialiased'>
+        <html lang='fr' className={`${poppins.variable} h-full`} suppressHydrationWarning>
+            <body className='h-full  bg-gray-50 dark:bg-slate-950/60 text-gray-900 antialiased'>
                 <ThemeProvider attribute="class" defaultTheme='system' enableSystem>
                     <Providers>
                         {children}

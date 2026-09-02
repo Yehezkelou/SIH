@@ -35,6 +35,7 @@ import {
 @Controller("users")
 @UseGuards(JwtAuthGuard, PermissionGuard)
 export class UserController {
+
     constructor(
         private readonly userService: UserService,
         private readonly logger: PinoLogger

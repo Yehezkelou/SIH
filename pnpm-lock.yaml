@@ -414,7 +414,7 @@ importers:
 
   apps/backend/urgency-service-e2e: {}
 
-  apps/frontend/admin-panel:
+  apps/frontend/auth-service:
     dependencies:
       next:
         specifier: ~16.1.6
@@ -426,7 +426,7 @@ importers:
         specifier: ^19.0.0
         version: 19.2.8(react@19.2.8)
 
-  apps/frontend/auth-service:
+  apps/frontend/service-info:
     dependencies:
       next:
         specifier: ~16.1.6

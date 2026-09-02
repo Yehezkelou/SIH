@@ -8,16 +8,16 @@ export const CreateUserSchema = z.object({
     email: z.string({ message: "L'adresse email est obligatoire" }).email("Format d'email professionnel invalide"),
     matricule: z.string({ message: "Le matricule RH est obligatoire" }).trim().min(1, "Le matricule ne peut pas être vide"),
 
-    genre: z.nativeEnum(Genre).optional(),
+    genre: z.enum(Genre).optional(),
     telephone: z.string().optional(),
-    personnelType: z.nativeEnum(PersonnelType, { message: "Le type de personnel est obligatoire" }),
+    personnelType: z.enum(PersonnelType, { message: "Le type de personnel est obligatoire" }),
     serviceAffectation: z.string().optional(),
     specialite: z.string().optional(),
     numeroOrdre: z.string().optional(),
 
     // roles obligatoires
     roleIds: z.array(
-        z.string().uuid("L'identifiant du rôle doit être un UUID valide")
+        z.uuid("L'identifiant du rôle doit être un UUID valide")
     ).min(1, "Au moins un rôle doit être attribué à l'agent"),
 
     // mdp temporaire optionnel
@@ -28,11 +28,11 @@ export const CreateUserSchema = z.object({
 export const UpdateUserSchema = z.object({
     nom: z.string().trim().min(1).optional(),
     prenom: z.string().trim().min(1).optional(),
-    email: z.string().email().optional(),
+    email: z.email().optional(),
     matricule: z.string().trim().min(1).optional(),
-    genre: z.nativeEnum(Genre).optional(),
+    genre: z.enum(Genre).optional(),
     telephone: z.string().optional(),
-    personnelType: z.nativeEnum(PersonnelType).optional(),
+    personnelType: z.enum(PersonnelType).optional(),
     serviceAffectation: z.string().optional(),
     specialite: z.string().optional(),
     numeroOrdre: z.string().optional(),
@@ -41,14 +41,14 @@ export const UpdateUserSchema = z.object({
 
 // changement de statut (PATCH /users/:id/status)
 export const UpdateUserStatusSchema = z.object({
-    status: z.nativeEnum(UserStatus, { message: "Le statut est obligatoire" }),
+    status: z.enum(UserStatus, { message: "Le statut est obligatoire" }),
     motif: z.string().optional(),
 });
 
 // attribution de roles (POST /users/:id/roles)
 export const AssignRolesSchema = z.object({
     roleIds: z.array(
-        z.string().uuid("L'identifiant du rôle doit être un UUID valide")
+        z.uuid("L'identifiant du rôle doit être un UUID valide")
     ).min(1, "Au moins un identifiant de rôle est requis"),
     expiresAt: z.coerce.date().optional(),
 });
@@ -56,7 +56,7 @@ export const AssignRolesSchema = z.object({
 // attacher un document (POST /users/:id/documents)
 export const AddUserDocumentSchema = z.object({
     userId: z.string().uuid("L'identifiant utilisateur doit être un UUID valide").optional(),
-    documentType: z.nativeEnum(UserDocumentType, { message: "Le type de document est obligatoire" }),
+    documentType: z.enum(UserDocumentType, { message: "Le type de document est obligatoire" }),
     numeroDocument: z.string().optional(),
     dateDelivrance: z.coerce.date().optional(),
     dateExpiration: z.coerce.date().optional(),
@@ -64,17 +64,17 @@ export const AddUserDocumentSchema = z.object({
 
 // supprimer un document (DELETE /users/:id/documents/:docId)
 export const RemoveUserDocumentSchema = z.object({
-    userId: z.string().uuid("L'identifiant utilisateur doit être un UUID valide").optional(),
-    documentId: z.string().uuid("L'identifiant du document doit être un UUID valide").optional(),
+    userId: z.uuid("L'identifiant utilisateur doit être un UUID valide").optional(),
+    documentId: z.uuid("L'identifiant du document doit être un UUID valide").optional(),
 });
 
 // recherche et pagination (GET /users)
 export const QueryUsersSchema = z.object({
     search: z.string().optional(),
-    personnelType: z.nativeEnum(PersonnelType).optional(),
-    status: z.nativeEnum(UserStatus).optional(),
+    personnelType: z.enum(PersonnelType).optional(),
+    status: z.enum(UserStatus).optional(),
     serviceAffectation: z.string().optional(),
-    roleId: z.string().uuid("L'identifiant du rôle doit être un UUID valide").optional(),
+    roleId: z.uuid("L'identifiant du rôle doit être un UUID valide").optional(),
 
     // filtre presence
     isConnected: z.preprocess((val) => {

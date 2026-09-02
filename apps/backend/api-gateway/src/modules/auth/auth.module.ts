@@ -23,7 +23,11 @@ import { AuthClientService } from "./auth.client";
                         readFileSync(join(process.cwd(), "certs/ca.crt")),
                         readFileSync(join(process.cwd(), "certs/client.key")),
                         readFileSync(join(process.cwd(), "certs/client.crt"))
-                    )
+                    ),
+                    channelOptions: {
+                        "grpc.ssl_target_name_override": "patient-identity-service",
+                        "grpc.default_authority": "patient-identity-service"
+                    }
                 }
             }
         ])

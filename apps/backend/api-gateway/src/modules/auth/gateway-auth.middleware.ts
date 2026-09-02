@@ -3,22 +3,13 @@ import { Request, Response } from "express";
 import { AuthClientService } from "./auth.client";
 import { isRoutePublic, getRequiredPermission } from "../config/routes.config";
 
-/**
- * Authentification de la gateway sous forme de MIDDLEWARE (et non de guard).
- *
- * Le proxy (`http-proxy-middleware`) termine la requête au niveau middleware,
- * AVANT que la couche des guards NestJS ne s'exécute. Un guard ne protégerait
- * donc jamais les routes proxifiées. En s'exécutant comme middleware, cette
- * vérification passe bien avant le proxy dans la chaîne `configure()`.
- */
+
 @Injectable()
 export class GatewayAuthMiddleware implements NestMiddleware {
     constructor(private readonly authClient: AuthClientService) {}
 
     async use(req: Request, res: Response, next: (error?: any) => void) {
-        // NB : ce middleware est monté via forRoutes(), donc Express place le
-        // chemin dans req.baseUrl et req.path devient relatif ("/"). On lit donc
-        // le chemin complet via req.originalUrl (sans la query string).
+
         const path = (req.originalUrl || req.url).split("?")[0];
         const method = req.method;
 

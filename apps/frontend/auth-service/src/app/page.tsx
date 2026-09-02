@@ -1,81 +1,69 @@
 'use client';
 
-import React from "react";
-import { useMe } from "@/features/me/hooks/UseMe";
-import { useLogout } from "@/features/me/hooks/useLogout";
-import { Button } from "@/components/ui/Button";
+import { SearchBar } from "@/components/ui/SearchBar";
+import { Time } from "@/components/ui/Time";
+import { TopBar } from "@/components/ui/TopBar";
+import { BottomBar } from "@/components/ui/BottomBar";
+import { SideBar } from "@/components/ui/SideBar";
+import { UseModule } from "@/components/ui/Module/useModule";
+import { motion, AnimatePresence } from "framer-motion";
+import React, { useState } from "react";
+
 
 export default function HomePage() {
-    const { data, isLoading, error } = useMe();
-    const { mutate: logout, isPending: isLoggingOut } = useLogout();
-
-    if (isLoading) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-gray-50">
-                <div className="flex flex-col items-center space-y-4">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-                    <p className="text-gray-500 font-medium">Chargement de votre session...</p>
-                </div>
-            </div>
-        );
-    }
-
-    if (error || !data?.user) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
-                <div className="max-w-md w-full bg-white p-6 rounded-xl shadow-md border border-red-100 text-center">
-                    <h2 className="text-xl font-bold text-red-600 mb-2">Session expirée</h2>
-                    <p className="text-gray-600 mb-6">Impossible de charger votre session de profil.</p>
-                    <Button onClick={() => logout()}>Retourner à la connexion</Button>
-                </div>
-            </div>
-        );
-    }
-
-    const { user } = data;
+    const [isSideBarOpen, setIsSideBarOpen] = useState(false);
+    const { Module: modules, recentModules, handleModuleClick } = UseModule();
 
     return (
-        <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-6">
-            <div className="w-full max-w-md bg-white p-8 rounded-2xl shadow-xl border border-gray-100">
-                <div className="flex flex-col items-center text-center space-y-4">
-                    {/* Avatar avec initiales */}
-                    <div className="h-16 w-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-2xl font-bold uppercase shadow-inner">
-                        {user.prenom[0]}{user.nom[0]}
-                    </div>
-                    
-                    <div>
-                        <h1 className="text-2xl font-bold text-gray-800">
-                            Bonjour, {user.prenom} {user.nom} 👋
-                        </h1>
-                    </div>
-
-                    {/* Informations détaillées */}
-                    <div className="w-full border-t border-gray-100 my-4 pt-4 text-left space-y-2 text-sm text-gray-600">
-                        <div>
-                            <span className="font-semibold text-gray-700">Matricule :</span> {user.matricule}
-                        </div>
-                        <div>
-                            <span className="font-semibold text-gray-700">Fonction :</span> {user.personnelType}
-                        </div>
-                        {user.serviceAffectation && (
-                            <div>
-                                <span className="font-semibold text-gray-700">Service :</span> {user.serviceAffectation}
-                            </div>
-                        )}
-                        <div>
-                            <span className="font-semibold text-gray-700">Rôles :</span> {user.roles.join(', ')}
-                        </div>
-                    </div>
-
-                    <Button 
-                        onClick={() => logout()} 
-                        isLoading={isLoggingOut}
-                        className="w-full bg-red-600 hover:bg-red-700 focus:ring-red-500 mt-6"
-                    >
-                        Se déconnecter
-                    </Button>
-                </div>
+        <div className="w-full relative min-h-screen">
+            <div className="fixed font-sans inset-0 flex items-center justify-center ">
+                <span className="text-[600px] font-black text-gray-200 dark:text-slate-700/90 opacity-50">
+                    O
+                </span>
             </div>
+            <div className="w-full h-[50px] flex items-center justify-end absolute top-2 left-0 z-30">
+                <TopBar onMenuClick={() => setIsSideBarOpen(true)} />
+            </div>
+            <div className="absolute top-[40%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-4 w-full max-w-[600px] px-4">
+                <Time />
+                <SearchBar />
+
+                {/* Cadre des modules récents cliqués (3 max) */}
+                <AnimatePresence>
+                    {recentModules.length > 0 && (
+                        <motion.div
+                            initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                            exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                            transition={{ duration: 0.2 }}
+                            className="flex items-center gap-2 mt-1 flex-wrap justify-center"
+                        >
+                            {recentModules.map((key) => {
+                                const item = modules[key as keyof typeof modules];
+                                if (!item) return null;
+                                const Icon = item.icon;
+                                return (
+                                    <motion.button
+                                        key={key}
+                                        onClick={() => handleModuleClick(key)}
+                                        whileHover={{ scale: 1.05, y: -1 }}
+                                        whileTap={{ scale: 0.95 }}
+                                        className="flex items-center gap-2 px-3.5 py-1.5 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md rounded-full border border-slate-200 dark:border-white/10 text-xs font-semibold text-gray-700 dark:text-gray-200 shadow-sm hover:bg-white dark:hover:bg-slate-800 transition-all cursor-pointer"
+                                    >
+                                        <Icon size={14} className="text-blue-500" />
+                                        <span>{item.title}</span>
+                                    </motion.button>
+                                );
+                            })}
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+            </div>
+            <div className="w-full absolute bottom-0 left-0 z-30">
+                <BottomBar />
+            </div>
+
+            <SideBar isOpen={isSideBarOpen} onClose={() => setIsSideBarOpen(false)} />
         </div>
     );
 }

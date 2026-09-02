@@ -15,8 +15,6 @@ export enum PersonnelType {
     SUPER_ADMIN = "SUPER_ADMIN",
     AUTRE = "AUTRE",
 }
-
-// ===== Statut du compte =====
 // Cycle de vie du compte utilisateur (indépendant des rôles).
 export enum UserStatus {
     EN_ATTENTE_ACTIVATION = "EN_ATTENTE_ACTIVATION", // créé, mot de passe pas encore défini

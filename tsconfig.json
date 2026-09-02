@@ -43,7 +43,7 @@
       "path": "./apps/frontend/auth-service"
     },
     {
-      "path": "./apps/frontend/admin-panel"
+      "path": "./apps/frontend/service-info"
     }
   ]
 }

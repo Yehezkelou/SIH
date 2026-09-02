@@ -58,3 +58,8 @@ certs/*.srl
 # Next.js
 .next
 out
+cle_openssh
+yehz.pub
+yehz
+Erp_psc_Alex-rsa.ppk
+ERP_PSC_clef-b_pub

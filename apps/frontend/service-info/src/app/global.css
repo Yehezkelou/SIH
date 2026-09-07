@@ -1,3 +1,73 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/**
+ * Design tokens.
+ * Valeurs exprimées en canaux RGB (« R G B », sans fonction) : c'est la seule
+ * forme qui laisse Tailwind injecter une opacité — `bg-primary/10`, `border-border/8`.
+ * Un token stocké en `#RRGGBB` ou `rgba()` fait silencieusement disparaître
+ * l'utilitaire dès qu'un modificateur `/xx` est appliqué.
+ */
+@layer base {
+  :root {
+    /* Fond de page & texte courant */
+    --page-bg: 255 255 255;        /* #FFFFFF */
+    --page-text: 25 29 32;         /* #191D20 */
+
+    /* Surface élevée : sidebar, topbar, cartes, tableaux */
+    --surface: 251 251 251;        /* #FBFBFB */
+    --surface-text: 25 29 32;      /* #191D20 */
+
+    /* Texte secondaire */
+    --muted: 100 116 139;          /* #64748B */
+
+    /* Bordures — consommées en /8 (et /12 pour un trait plus marqué) */
+    --border: 25 29 32;            /* #191D20 */
+
+    /* Voile de survol — consommé en /6 (et /4 pour un voile plus léger) */
+    --hover: 25 29 32;             /* #191D20 */
+
+    /* État actif (navigation, page courante) */
+    --active-bg: 234 235 237;      /* #EAEBED */
+    --active-text: 25 29 32;       /* #191D20 */
+
+    /* Action principale : inversion du neutre, aucune teinte supplémentaire */
+    --primary: 25 29 32;           /* #191D20 */
+    --primary-text: 251 251 251;   /* #FBFBFB */
+
+    /* Statuts — la teinte de fond est commune aux deux thèmes (utilisée en /10,
+       /15, /20) ; seule la déclinaison texte bascule pour rester lisible. */
+    --success: 16 185 129;         --success-text: 5 150 105;
+    --info: 14 165 233;            --info-text: 2 132 199;
+    --warning: 245 158 11;         --warning-text: 217 119 6;
+    --danger: 244 63 94;           --danger-text: 225 29 72;
+    --neutral: 100 116 139;        --neutral-text: 71 85 105;
+  }
+
+  .dark {
+    --page-bg: 20 23 26;           /* #14171A */
+    --page-text: 251 251 251;      /* #FBFBFB */
+
+    --surface: 25 29 32;           /* #191D20 */
+    --surface-text: 251 251 251;   /* #FBFBFB */
+
+    --muted: 148 163 184;          /* #94A3B8 */
+
+    --border: 255 255 255;         /* #FFFFFF */
+    --hover: 255 255 255;          /* #FFFFFF */
+
+    --active-bg: 39 42 47;         /* #272A2F */
+    --active-text: 251 251 251;    /* #FBFBFB */
+
+    --primary: 251 251 251;        /* #FBFBFB */
+    --primary-text: 25 29 32;      /* #191D20 */
+
+    --success-text: 52 211 153;
+    --info-text: 56 189 248;
+    --warning-text: 251 191 36;
+    --danger-text: 251 113 133;
+    --neutral-text: 148 163 184;
+  }
+}
+

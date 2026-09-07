@@ -24,6 +24,37 @@ export type Genre = 'M' | 'F';
 
 export type MfaMethod = 'NONE' | 'TOTP' | 'EMAIL' | 'SMS';
 
+// Types de documents justificatifs RH hospitaliers
+export type UserDocumentType = 
+  | 'CNI'
+  | 'PASSEPORT'
+  | 'CARTE_SEJOUR'
+  | 'DIPLOME'
+  | 'CARTE_PROFESSIONNELLE'
+  | 'CASIER_JUDICIAIRE'
+  | 'CONTRAT_TRAVAIL'
+  | 'AUTRE';
+
+export const USER_DOCUMENT_TYPES: { value: UserDocumentType; label: string; description: string }[] = [
+  { value: 'CNI', label: "Carte Nationale d'Identité (CNI)", description: 'Pièce d’identité officielle en cours de validité' },
+  { value: 'PASSEPORT', label: 'Passeport', description: 'Passeport national ou international' },
+  { value: 'CARTE_SEJOUR', label: 'Titre / Carte de séjour', description: 'Autorisation de séjour et travail' },
+  { value: 'DIPLOME', label: 'Diplôme d’état médical / paramédical', description: 'Attestation de réussite ou diplôme officiel' },
+  { value: 'CARTE_PROFESSIONNELLE', label: 'Carte Professionnelle (CPS / RPPS)', description: 'Inscription au tableau de l’ordre / carte CPS' },
+  { value: 'CASIER_JUDICIAIRE', label: 'Extrait de Casier Judiciaire (B3)', description: 'Bulletin n°3 vierge datant de moins de 3 mois' },
+  { value: 'CONTRAT_TRAVAIL', label: 'Contrat de Travail / Affectation', description: 'Contrat signé ou arrêté d’affectation hospitalière' },
+  { value: 'AUTRE', label: 'Autre document justificatif', description: 'Attestation, certificat ou annexe' },
+];
+
+export interface PendingDocument {
+  id: string;
+  file: File;
+  documentType: UserDocumentType;
+  numeroDocument?: string;
+  dateDelivrance?: string;
+  dateExpiration?: string;
+}
+
 // ===== Entités associées =====
 
 export interface Permission {

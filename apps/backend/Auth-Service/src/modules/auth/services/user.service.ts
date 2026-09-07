@@ -2,7 +2,7 @@ import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
 import { DataSource } from "typeorm";
 import { UserRepository } from "../repositories/user.repository";
 import { RefreshTokenRepository } from "../repositories/refreshToken.repository";
-import { User, UserRole, UserStatus } from "../entities";
+import { Permission, Role, RolePermission, User, UserRole, UserStatus } from "../entities";
 import {
     AssignRolesInput,
     CreateUserInput,
@@ -334,5 +334,180 @@ export class UserService {
         return {
             message: "Compte agent désactivé et archivé avec succès.",
         };
+    }
+
+    // liste de tous les rôles disponibles avec leurs permissions et nombre d'agents
+    async findAllRoles() {
+        return await this.dataSource.getRepository(Role).find({
+            relations: {
+                rolePermissions: {
+                    permission: true,
+                },
+                userRoles: true,
+            },
+            order: { isSystem: "DESC", libelle: "ASC" },
+        });
+    }
+
+    // liste de toutes les permissions système
+    async findAllPermissions() {
+        return await this.dataSource.getRepository(Permission).find({
+            order: { ressource: "ASC", code: "ASC" },
+        });
+    }
+
+    // création d'un rôle personnalisé
+    async createRole(
+        data: { code: string; libelle: string; description?: string; permissionIds?: string[] },
+        adminId?: string
+    ) {
+        const roleRepo = this.dataSource.getRepository(Role);
+        const codeNormalized = data.code.trim().toUpperCase();
+
+        const exists = await roleRepo.findOne({ where: { code: codeNormalized } });
+        if (exists) {
+            throw new HttpException(
+                {
+                    statusCode: HttpStatus.CONFLICT,
+                    message: `Le code de rôle '${codeNormalized}' existe déjà.`,
+                },
+                HttpStatus.CONFLICT
+            );
+        }
+
+        return await this.dataSource.transaction(async (manager) => {
+            const role = manager.create(Role, {
+                code: codeNormalized,
+                libelle: data.libelle.trim(),
+                description: data.description?.trim(),
+                isSystem: false,
+                createdBy: adminId,
+            });
+
+            const savedRole = await manager.save(role);
+
+            if (data.permissionIds && data.permissionIds.length > 0) {
+                const rolePerms = data.permissionIds.map((permissionId) =>
+                    manager.create(RolePermission, {
+                        roleId: savedRole.id,
+                        permissionId,
+                        grantedBy: adminId,
+                    })
+                );
+                await manager.save(rolePerms);
+            }
+
+            return await manager.getRepository(Role).findOne({
+                where: { id: savedRole.id },
+                relations: {
+                    rolePermissions: {
+                        permission: true,
+                    },
+                    userRoles: true,
+                },
+            });
+        });
+    }
+
+    // mise à jour d'un rôle
+    async updateRole(
+        roleId: string,
+        data: { libelle?: string; description?: string; permissionIds?: string[] },
+        adminId?: string
+    ) {
+        const roleRepo = this.dataSource.getRepository(Role);
+        const role = await roleRepo.findOne({
+            where: { id: roleId },
+            relations: { rolePermissions: true },
+        });
+
+        if (!role) {
+            throw new HttpException(
+                {
+                    statusCode: HttpStatus.NOT_FOUND,
+                    message: "Rôle non trouvé.",
+                },
+                HttpStatus.NOT_FOUND
+            );
+        }
+
+        return await this.dataSource.transaction(async (manager) => {
+            if (data.libelle) role.libelle = data.libelle.trim();
+            if (data.description !== undefined) role.description = data.description.trim();
+            role.updatedBy = adminId;
+
+            await manager.save(role);
+
+            // Mise à jour des permissions si fournies
+            if (data.permissionIds !== undefined) {
+                await manager.delete(RolePermission, { roleId });
+                if (data.permissionIds.length > 0) {
+                    const newPerms = data.permissionIds.map((permissionId) =>
+                        manager.create(RolePermission, {
+                            roleId,
+                            permissionId,
+                            grantedBy: adminId,
+                        })
+                    );
+                    await manager.save(newPerms);
+                }
+            }
+
+            return await manager.getRepository(Role).findOne({
+                where: { id: roleId },
+                relations: {
+                    rolePermissions: {
+                        permission: true,
+                    },
+                    userRoles: true,
+                },
+            });
+        });
+    }
+
+    // suppression d'un rôle (impossible si isSystem)
+    async deleteRole(roleId: string) {
+        const roleRepo = this.dataSource.getRepository(Role);
+        const role = await roleRepo.findOne({
+            where: { id: roleId },
+            relations: { userRoles: true },
+        });
+
+        if (!role) {
+            throw new HttpException(
+                {
+                    statusCode: HttpStatus.NOT_FOUND,
+                    message: "Rôle non trouvé.",
+                },
+                HttpStatus.NOT_FOUND
+            );
+        }
+
+        if (role.isSystem) {
+            throw new HttpException(
+                {
+                    statusCode: HttpStatus.FORBIDDEN,
+                    message: "Impossible de supprimer un rôle système.",
+                },
+                HttpStatus.FORBIDDEN
+            );
+        }
+
+        if (role.userRoles && role.userRoles.length > 0) {
+            throw new HttpException(
+                {
+                    statusCode: HttpStatus.CONFLICT,
+                    message: `Ce rôle est actuellement attribué à ${role.userRoles.length} agent(s). Réassignez ces agents avant de supprimer le rôle.`,
+                },
+                HttpStatus.CONFLICT
+            );
+        }
+
+        await this.dataSource.transaction(async (manager) => {
+            await manager.delete(RolePermission, { roleId });
+            await manager.delete(Role, { id: roleId });
+        });
+
+        return { message: "Rôle supprimé avec succès." };
     }
 }

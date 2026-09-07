@@ -23,21 +23,32 @@ export const routesConfig : ProxyRoute[] = [
         ]
     },
     {
+        prefix : '/api/users',
+        target : process.env.AUTH_HTTP_URL || "http://localhost:3003",
+        // Aucune permission déclarée ici : les routes /api/users sont protégées
+        // une par une côté Auth-Service par @RequirePermissions, qui reste
+        // l'autorité. Les trois entrées qui figuraient ici visaient des chemins
+        // inexistants (/users/me, /users/search, /users/password/change — le
+        // "me" réel est /api/auth/me) et employaient des codes en minuscules
+        // ("user:read") que la comparaison stricte de getRequiredPermission
+        // n'aurait jamais fait correspondre aux codes semés ("user:READ").
+    },
+    {
         prefix : "/api/patient",
         target : process.env.PATIENT_HTTP_URL || "http://localhost:3001",
         permissions : [
-            { path: "/api/patient/create", method: "POST", permission: "patient:create" },
-            { path: "/api/patient/update", method: "PUT", permission: "patient:update" },
-            { path: "/api/patient", method: "DELETE", permission: "patient:delete" }
+            { path: "/api/patient/create", method: "POST", permission: "patient:CREATE" },
+            { path: "/api/patient/update", method: "PUT", permission: "patient:UPDATE" },
+            { path: "/api/patient", method: "DELETE", permission: "patient:DELETE" }
         ]
     },
     {
         prefix: "/api/admission",
         target: process.env.ADMISSION_HTTP_URL || "http://localhost:3002",
         permissions: [
-            { path: "/api/admission", method: "POST", permission: "admission:create" },
-            { path: "/api/admission", method: "PUT", permission: "admission:update" },
-            { path: "/api/admission", method: "DELETE", permission: "admission:delete" }
+            { path: "/api/admission", method: "POST", permission: "admission:CREATE" },
+            { path: "/api/admission", method: "PUT", permission: "admission:UPDATE" },
+            { path: "/api/admission", method: "DELETE", permission: "admission:DELETE" }
         ]
     }
 

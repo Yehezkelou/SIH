@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { env } from '@/config/env';
+import Cookies from "js-cookie"
 
 export const apiClient = axios.create({
   baseURL: env.API_URL,
@@ -9,15 +10,11 @@ export const apiClient = axios.create({
   withCredentials: true,
 });
 
-// Intercepteur requête : injection du token (à brancher à la session).
-apiClient.interceptors.request.use((config) => {
-  return config;
-});
 
-// Intercepteur réponse : gestion centralisée des erreurs / refresh sur 401.
-apiClient.interceptors.response.use(
-  (response) => response,
-  async (error) => {
-    return Promise.reject(error);
+apiClient.interceptors.request.use((config) => {
+  const token = Cookies.get("auth-token-cookie");
+  if(token){
+    config.headers.Authorization = `Bearer ${token}`
   }
-);
+  return config
+})

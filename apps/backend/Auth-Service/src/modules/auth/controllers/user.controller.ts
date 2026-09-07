@@ -97,6 +97,118 @@ export class UserController {
         });
     }
 
+    // liste de tous les rôles disponibles (GET /api/users/roles)
+    // Lister les rôles est une lecture RBAC, au même titre que GET /users/permissions :
+    // la route exigeait "user:READ", ce qui laissait un porteur de ce seul droit
+    // obtenir les rôles puis se heurter à un 403 sur les permissions.
+    // Note : le formulaire de création d'agent consomme aussi cette route pour
+    // peupler son sélecteur de rôles ; ADMIN détient "role:READ", il n'est pas affecté.
+    @Get("roles")
+    @RequirePermissions("role:READ")
+    async getRoles(@Res() res: express.Response) {
+        this.logger.info({
+            message: "Consultation liste des rôles",
+            context: "GET /api/users/roles",
+        });
+
+        const roles = await this.userService.findAllRoles();
+
+        return res.status(HttpStatus.OK).json({
+            data: roles,
+            status: HttpStatus.OK,
+            timeStamp: new Date().toISOString(),
+        });
+    }
+
+    // liste de toutes les permissions système (GET /api/users/permissions)
+    @Get("permissions")
+    @RequirePermissions("role:READ")
+    async getPermissions(@Res() res: express.Response) {
+        this.logger.info({
+            message: "Consultation liste des permissions",
+            context: "GET /api/users/permissions",
+        });
+
+        const permissions = await this.userService.findAllPermissions();
+
+        return res.status(HttpStatus.OK).json({
+            data: permissions,
+            status: HttpStatus.OK,
+            timeStamp: new Date().toISOString(),
+        });
+    }
+
+    // création d'un rôle (POST /api/users/roles)
+    @Post("roles")
+    @RequirePermissions("role:CREATE")
+    async createRole(
+        @Body() body: { code: string; libelle: string; description?: string; permissionIds?: string[] },
+        @CurrentUser("id") adminId: string,
+        @Res() res: express.Response
+    ) {
+        this.logger.info({
+            message: "Création d'un rôle",
+            context: "POST /api/users/roles",
+            code: body.code,
+        });
+
+        const role = await this.userService.createRole(body, adminId);
+
+        return res.status(HttpStatus.CREATED).json({
+            message: "Rôle créé avec succès.",
+            role,
+            status: HttpStatus.CREATED,
+            timeStamp: new Date().toISOString(),
+        });
+    }
+
+    // modification d'un rôle (PUT /api/users/roles/:id)
+    @Put("roles/:id")
+    @RequirePermissions("role:UPDATE")
+    async updateRole(
+        @Param("id") id: string,
+        @Body() body: { libelle?: string; description?: string; permissionIds?: string[] },
+        @CurrentUser("id") adminId: string,
+        @Res() res: express.Response
+    ) {
+        this.logger.info({
+            message: "Modification d'un rôle",
+            context: "PUT /api/users/roles/:id",
+            roleId: id,
+        });
+
+        const role = await this.userService.updateRole(id, body, adminId);
+
+        return res.status(HttpStatus.OK).json({
+            message: "Rôle mis à jour avec succès.",
+            role,
+            status: HttpStatus.OK,
+            timeStamp: new Date().toISOString(),
+        });
+    }
+
+    // suppression d'un rôle (DELETE /api/users/roles/:id)
+    @Delete("roles/:id")
+    @RequirePermissions("role:DELETE")
+    async deleteRole(
+        @Param("id") id: string,
+        @Res() res: express.Response
+    ) {
+        this.logger.info({
+            message: "Suppression d'un rôle",
+            context: "DELETE /api/users/roles/:id",
+            roleId: id,
+        });
+
+        const result = await this.userService.deleteRole(id);
+
+        return res.status(HttpStatus.OK).json({
+            message: result.message,
+            status: HttpStatus.OK,
+            timeStamp: new Date().toISOString(),
+        });
+    }
+
     // fiche detaillee d'un agent (GET /api/users/:id)
     @Get(":id")
     @RequirePermissions("user:READ")

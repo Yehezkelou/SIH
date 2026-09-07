@@ -1,44 +1,53 @@
 /** @type {import('tailwindcss').Config} */
+
+// Chaque token est branché sur des canaux RGB via `<alpha-value>`, ce qui rend
+// les modificateurs d'opacité fonctionnels (`bg-primary/10`, `border-border/8`).
+const token = (name) => `rgb(var(--${name}) / <alpha-value>)`;
+
 module.exports = {
   content: [
     './{src,pages,components,app}/**/*.{ts,tsx,js,jsx,html}',
     '!./{src,pages,components,app}/**/*.{stories,spec}.{ts,tsx,js,jsx,html}',
   ],
-  darkMode: "class",
+  darkMode: 'class',
   theme: {
     extend: {
+      fontFamily: {
+        sans: ['var(--font-poppins)', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+      },
+      // Paliers d'opacité correspondant aux valeurs de la maquette
+      // (bordures à 8 %, survol à 6 %) — absents de l'échelle par défaut.
+      opacity: {
+        4: '0.04',
+        6: '0.06',
+        8: '0.08',
+        12: '0.12',
+      },
       colors: {
-        brand: {
-          400: 'var(--brand-400)',
-          500: 'var(--brand-500)',
-          600: 'var(--brand-600)',
+        page: {
+          DEFAULT: token('page-bg'),
+          text: token('page-text'),
         },
-        teal: { DEFAULT: 'var(--accent-teal)' },
-        amber: { DEFAULT: 'var(--accent-amber)' },
-        link: 'var(--link)',
-        bg: 'var(--bg)',
-        surface: 'var(--surface)',
-        'surface-2': 'var(--surface-2)',
-        border: 'var(--border)',
-        text: 'var(--text)',
-        muted: 'var(--text-muted)',
-        success: 'var(--success)',
-        warning: 'var(--warning)',
-        danger: 'var(--danger)',
-        info: 'var(--info)',
-      },
-      borderRadius: {
-        sm: 'var(--radius-sm)',
-        lg: 'var(--radius-lg)',
-        xl: 'var(--radius-xl)',
-      },
-      boxShadow: {
-        card: 'var(--shadow-card)',
-        pop: 'var(--shadow-pop)',
-      },
-      backgroundImage: {
-        sidebar: 'linear-gradient(180deg, var(--sidebar-from) 0%, var(--sidebar-to) 100%)',
-        promo: 'linear-gradient(135deg, var(--brand-400) 0%, var(--accent-teal) 100%)',
+        surface: {
+          DEFAULT: token('surface'),
+          text: token('surface-text'),
+        },
+        muted: token('muted'),
+        border: token('border'),
+        hover: token('hover'),
+        active: {
+          DEFAULT: token('active-bg'),
+          text: token('active-text'),
+        },
+        primary: {
+          DEFAULT: token('primary'),
+          text: token('primary-text'),
+        },
+        success: { DEFAULT: token('success'), text: token('success-text') },
+        info: { DEFAULT: token('info'), text: token('info-text') },
+        warning: { DEFAULT: token('warning'), text: token('warning-text') },
+        danger: { DEFAULT: token('danger'), text: token('danger-text') },
+        neutral: { DEFAULT: token('neutral'), text: token('neutral-text') },
       },
     },
   },

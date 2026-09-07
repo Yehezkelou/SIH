@@ -18,7 +18,7 @@ export const metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="fr" className={`${poppins.variable} h-full`} suppressHydrationWarning>
-      <body className="h-full bg-bg text-text antialiased">
+      <body className="h-full bg-page text-page-text font-sans antialiased">
         <ThemeProvider attribute="class" defaultTheme='system' enableSystem>
           <Providers>{children}</Providers>
         </ThemeProvider>

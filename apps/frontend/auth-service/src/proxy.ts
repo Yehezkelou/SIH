@@ -15,7 +15,7 @@ export default function middleware(request : NextRequest){
     }
     
     if(token && isPublicRoute){
-        return NextResponse.redirect(new URL("/me", request.url))
+        return NextResponse.redirect(new URL("/", request.url))
     }
 
     return NextResponse.next()

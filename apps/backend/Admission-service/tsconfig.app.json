@@ -1,0 +1,28 @@
+{
+  "extends": "../../../tsconfig.base.json",
+  "compilerOptions": {
+    "composite": true,
+    "outDir": "dist",
+    "types": ["node"],
+    "tsBuildInfoFile": "dist/tsconfig.app.tsbuildinfo",
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "target": "es2022"
+  },
+  "references": [
+    {
+      "path": "../../../libs/Filter/tsconfig.lib.json"
+    },
+    {
+      "path": "../../../libs/contracts/tsconfig.lib.json"
+    },
+    {
+      "path": "../../../libs/logger/tsconfig.lib.json"
+    },
+    {
+      "path": "../../../libs/database/tsconfig.lib.json"
+    }
+  ],
+  "include": ["src/**/*.ts"],
+  "exclude": []
+}

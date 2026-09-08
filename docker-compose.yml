@@ -1,0 +1,67 @@
+version: '3.8'
+
+services:
+
+  patients-db:
+    image: postgres:16-alpine
+    container_name: patients-db
+    environment:
+      POSTGRES_USER: "yehezou"
+      POSTGRES_PASSWORD: "eze10011"
+      POSTGRES_DB: "patients-db"
+    ports:
+      - "5433:5432"
+    volumes:
+      - patients_data:/var/lib/postgresql/data
+
+  admission-db:
+    image: postgres:16-alpine
+    container_name: admission-db
+    environment:
+      POSTGRES_USER: "yehezou"
+      POSTGRES_PASSWORD: "eze10011"
+      POSTGRES_DB: "admission-db"
+    ports:
+      - "5434:5432"
+    volumes:
+      - admission_data:/var/lib/postgresql/data
+
+  auth-db:
+    image: postgres:16-alpine
+    container_name: auth-db
+    environment:
+      POSTGRES_USER: "yehezou"
+      POSTGRES_PASSWORD: "eze10011"
+      POSTGRES_DB: "auth-db"
+    ports:
+      - "5435:5432"
+    volumes:
+      - auth_data:/var/lib/postgresql/data
+
+  api-gateway:
+    build:
+      context: .
+      dockerfile: apps/backend/api-gateway/Dockerfile
+    container_name: api-gateway
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./certs:/app/certs
+    environment:
+      - PORT=8080
+      - NODE_ENV=production
+      - CORS_ORIGIN=http://localhost:3000,http://localhost:3100
+      - AUTH_HTTP_URL=http://host.docker.internal:3003
+      - PATIENT_HTTP_URL=http://host.docker.internal:3001
+      - ADMISSION_HTTP_URL=http://host.docker.internal:3002
+      - SERVICE_NAME=api-gateway
+      - SERVICE_JWT_SECRET=super_secret_key_inter_service_sih_2026
+      - AUTH_GRPC_URL=host.docker.internal:50052
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    
+
+volumes:
+  patients_data:
+  admission_data:
+  auth_data:

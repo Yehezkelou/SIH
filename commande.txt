@@ -1,0 +1,16 @@
+
+// create new micro-service 
+pnpm nx g @nx/nest:app apps/backend/name-microservice 
+
+OR
+
+npx nx g @nx/nest:app apps/backend/name-microservice  
+npx create-nx-worksplace@latest le repot --preset=apps
+
+// create new Next.js service
+pnpm add -D @nx/next
+pnpm nx g @nx/next:app apps/frontend/name-service
+
+OR
+
+npx nx g @nx/next:app apps/frontend/name-service

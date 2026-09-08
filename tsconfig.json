@@ -11,6 +11,42 @@
     },
     {
       "path": "./apps/backend/Patient-Identity-Service"
+    },
+    {
+      "path": "./libs/database"
+    },
+    {
+      "path": "./libs/logger"
+    },
+    {
+      "path": "./libs/Filter"
+    },
+    {
+      "path": "./apps/backend/Admission-service-e2e"
+    },
+    {
+      "path": "./apps/backend/Admission-service"
+    },
+    {
+      "path": "./apps/backend/urgency-service-e2e"
+    },
+    {
+      "path": "./apps/backend/urgency-service"
+    },
+    {
+      "path": "./apps/backend/Auth-Service"
+    },
+    {
+      "path": "./apps/backend/api-gateway"
+    },
+    {
+      "path": "./apps/frontend/auth-service"
+    },
+    {
+      "path": "./apps/frontend/service-info"
+    },
+    {
+      "path": "./apps/frontend/admission-service"
     }
   ]
 }

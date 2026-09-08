@@ -1,21 +1,64 @@
-/**
- * This is not a production server yet!
- * This is only a minimal backend to get started.
- */
-
 import { Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app/app.module';
+import { MicroserviceOptions, Transport } from '@nestjs/microservices';
+import { join } from 'path';
+import { PatientModule } from './modules/patient/patient.module';
+import {ServerCredentials, ServerMetricRecorder} from "@grpc/grpc-js"
+import { readFileSync } from 'fs';
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(PatientModule);
   const globalPrefix = 'api';
+
+  // Config gRPC microservice hybride
+  app.connectMicroservice<MicroserviceOptions>({
+    transport: Transport.GRPC,
+    options: {
+      package: 'patient',
+      protoPath: join(process.cwd(), 'libs/contracts/proto/patient.proto'),
+      url: process.env.PATIENT_GRPC_URL ?? '0.0.0.0:50051',
+      credentials : ServerCredentials.createSsl(
+        readFileSync(join(process.cwd(), "certs/ca.crt")),
+        [{
+          private_key : readFileSync(join(process.cwd(), "certs/server.key")),
+          cert_chain : readFileSync(join(process.cwd(), "certs/server.crt"))
+        }],
+        true,
+      )
+    },
+  });
+
+   // configuration cors
+  app.enableCors({
+    origin : process.env.CORS_ORIGIN ?
+             process.env.CORS_ORIGIN.split(',') 
+             : ["*"],
+    methods : ["GET", "POST", "PUT","PATCH", "DELETE", "OPTIONS"],
+    credentials : true,
+  })
+  
+  // Démarrage des microservices gRPC
+  await app.startAllMicroservices();
+
+  // Prefix HTTP REST
   app.setGlobalPrefix(globalPrefix);
+
+  // Configuration Swagger
+  const config = new DocumentBuilder()
+    .setTitle('Patient Identity Service')
+    .setDescription('API de Gestion des Identités Patients et Dossiers')
+    .setVersion('1.0')
+    .addBearerAuth()
+    .build();
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api/patient/docs', app, document);
+
   const port = process.env.PORT || 3000;
   await app.listen(port);
-  Logger.log(
-    `🚀 Application is running on: http://localhost:${port}/${globalPrefix}`,
-  );
+
+  Logger.log(`🚀 HTTP REST: http://localhost:${port}/${globalPrefix}`);
+  Logger.log(`🔌 gRPC Server: ${process.env.PATIENT_GRPC_URL ?? '0.0.0.0:50051'}`);
 }
 
 bootstrap();

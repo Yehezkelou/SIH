@@ -38,8 +38,20 @@ export const routesConfig : ProxyRoute[] = [
         target : process.env.PATIENT_HTTP_URL || "http://localhost:3001",
         permissions : [
             { path: "/api/patient/create", method: "POST", permission: "patient:CREATE" },
+            { path: "/api/patient/provisoir", method: "POST", permission: "patient:CREATE" },
+            { path: "/api/patient/regularisation", method: "PUT", permission: "patient:UPDATE" },
             { path: "/api/patient/update", method: "PUT", permission: "patient:UPDATE" },
+            { path: "/api/patient/fusion", method: "POST", permission: "patient:UPDATE" },
+            { path: "/api/patient/delete", method: "DELETE", permission: "patient:DELETE" },
             { path: "/api/patient", method: "DELETE", permission: "patient:DELETE" }
+        ]
+    },
+    {
+        prefix : "/api/dossier",
+        target : process.env.PATIENT_HTTP_URL || "http://localhost:3001",
+        permissions : [
+            { path: "/api/dossier", method: "PUT", permission: "patient:UPDATE" },
+            { path: "/api/dossier", method: "DELETE", permission: "patient:DELETE" }
         ]
     },
     {

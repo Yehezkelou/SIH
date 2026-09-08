@@ -140,10 +140,14 @@ export interface AgentDocument {
     userId: string;
     documentType: string;
     numeroDocument?: string;
-    nomFichier: string;
-    cheminFichier: string;
-    mimeType: string;
-    tailleFichier: number;
+    nomFichier?: string;
+    documentName?: string;
+    cheminFichier?: string;
+    documentUrl?: string;
+    mimeType?: string;
+    documentExtension?: string;
+    tailleFichier?: number;
+    documentSize?: number;
     dateDelivrance?: string | null;
     dateExpiration?: string | null;
     createdAt: string;

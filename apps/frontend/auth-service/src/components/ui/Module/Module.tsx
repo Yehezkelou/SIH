@@ -18,16 +18,16 @@ export function Module() {
                         whileHover={{ scale: 1.02, x: 4 }}
                         whileTap={{ scale: 0.98 }}
                         href={item.url}
-                        className="flex items-center gap-3.5 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200/80 dark:border-white/5 transition-all text-left w-full group cursor-pointer shadow-xs"
+                        className="flex items-center gap-3.5 p-3 rounded-xl bg-page hover:bg-hover/6 border border-border/8 transition-all text-left w-full group cursor-pointer shadow-xs"
                     >
-                        <div className="p-2.5 rounded-lg bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                        <div className="p-2.5 rounded-lg bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-text transition-colors">
                             <Icon size={20} />
                         </div>
                         <div className="flex flex-col">
-                            <span className="text-sm font-semibold text-gray-800 dark:text-gray-200">
+                            <span className="text-sm font-semibold text-surface-text">
                                 {item.title}
                             </span>
-                            <span className="text-xs text-gray-500 dark:text-gray-400">
+                            <span className="text-xs text-muted">
                                 {item.description}
                             </span>
                         </div>

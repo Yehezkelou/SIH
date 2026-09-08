@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Search, Filter, ShieldAlert, LayoutGrid, Table, X } from 'lucide-react';
+import { Search, ShieldAlert, LayoutGrid, Table, X } from 'lucide-react';
 import { Input } from '@/components/ui/Input';
 import { PermissionFilterState } from '../schema';
 import { DOMAIN_METADATA } from '../utils/permissionAuditHelpers';

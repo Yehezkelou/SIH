@@ -74,11 +74,12 @@ export function PermissionMatrixView({ roles, matrixRows }: PermissionMatrixView
                                                 </span>
                                                 <div className="flex items-center gap-1 shrink-0">
                                                     {permission.sensitivity === 'critical' && (
-                                                        <ShieldAlert
-                                                            size={12}
-                                                            className="text-rose-500"
-                                                            title="Permission critique"
-                                                        />
+                                                        <span title="Permission critique" className="inline-flex">
+                                                            <ShieldAlert
+                                                                size={12}
+                                                                className="text-rose-500"
+                                                            />
+                                                        </span>
                                                     )}
                                                     <span
                                                         className={`text-[9px] font-semibold px-1.5 py-0.5 rounded border ${actionVisual.bg} ${actionVisual.text} ${actionVisual.border}`}

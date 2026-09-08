@@ -1,7 +1,7 @@
 import type { NextRequest } from "next/server"
 import { NextResponse } from "next/server"
 
-const IS_PUBLIC_ROOT = ["/login", "/forgot-password", "/reset-password"]
+const IS_PUBLIC_ROOT = ["/login", "/forgot-password", "/reset-password", "/mfa"]
 
 export default function middleware(request : NextRequest){
 

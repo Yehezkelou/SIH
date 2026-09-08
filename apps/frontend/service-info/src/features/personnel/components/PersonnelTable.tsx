@@ -1,12 +1,11 @@
 'use client';
 
 import React from 'react';
-import Link from 'next/link';
-import { Eye, Mail, Building2, Clock } from 'lucide-react';
+import { Mail, Building2, Clock } from 'lucide-react';
 import { AgentUser } from '../schema';
 import { PersonnelStatusBadge } from './PersonnelStatusBadge';
 import { PersonnelStateCard } from './PersonnelStateCard';
-import { ROUTES } from '@/config/routes';
+import { PersonnelActionsMenu } from './PersonnelActionsMenu';
 
 interface PersonnelTableProps {
     agents: AgentUser[];
@@ -172,19 +171,11 @@ export function PersonnelTable({ agents, isLoading, onToggleStatus }: PersonnelT
                                     </div>
                                 </td>
 
-                                {/* 6. Actions */}
+                                {/* 6. Actions — toutes réunies dans un menu unique,
+                                    filtrées par les droits réels de l'utilisateur. */}
                                 <td className="py-3 px-4 text-right">
-                                    <div className="flex items-center justify-end gap-1.5">
-                                        <Link
-                                            href={ROUTES.PERSONNEL_DETAIL(agent.id)}
-                                            title="Consulter la fiche agent"
-                                            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium 
-                                            text-surface-text bg-hover/6 hover:bg-primary/8 hover:text-primary-text 
-                                            border border-border/8 transition-colors"
-                                        >
-                                            <Eye size={13} />
-                                            <span className="hidden md:inline">Voir</span>
-                                        </Link>
+                                    <div className="flex items-center justify-end">
+                                        <PersonnelActionsMenu agent={agent} />
                                     </div>
                                 </td>
                             </tr>

@@ -5,7 +5,6 @@ import { CreatePatientInput, CreatePatientProvisoirInput, FindOnePatientInput, M
 import { PatientIdGenerated } from "../../../helpers/func/uniquePatientIdGenerated";
 import { toEntitySnapshot } from "../../../helpers/entitySnapshot";
 import { ArchivDossier } from "../entities/archivDossier.entity";
-import { id } from "zod/locales";
 import { PatientMergeLog } from "../entities/patientMergeLog.entity";
 
 
@@ -25,15 +24,21 @@ export class PatientRepository extends Repository<Patient> {
     async createNewPatient(data: CreatePatientInput) {
 
 
-        // existing Patient 
-        const existingPatient = await this.findOne({
-            where: [
-                { numIdentityNational: data.uniqueIdentity.numIdentityNational },
-                { numSecuSocial: data.uniqueIdentity.numSecuSocial },
-                { numCMU: data.uniqueIdentity.numeroCMU },
-                { numeroPassport: data.uniqueIdentity.numeroPassport }
-            ]
-        })
+        // existing Patient
+        // Un `where` en tableau ne doit contenir que les identifiants réellement
+        // fournis : une clause dont la valeur est `undefined` est ignorée par
+        // TypeORM et ferait remonter le premier patient de la table, donc un 409
+        // sur toute création sans identifiant unique.
+        const uniqueConditions = [
+            { numIdentityNational: data.uniqueIdentity.numIdentityNational },
+            { numSecuSocial: data.uniqueIdentity.numSecuSocial },
+            { numCMU: data.uniqueIdentity.numeroCMU },
+            { numeroPassport: data.uniqueIdentity.numeroPassport },
+        ].filter((condition) => Object.values(condition)[0] != null)
+
+        const existingPatient = uniqueConditions.length > 0
+            ? await this.findOne({ where: uniqueConditions })
+            : null
 
         if (existingPatient) {
             return {
@@ -48,7 +53,7 @@ export class PatientRepository extends Repository<Patient> {
         for (let i = 1; i <= MaxFind; i++) {
 
             numeroDossier = PatientIdGenerated(data.identity.nom)
-            const existing = this.findOne({
+            const existing = await this.findOne({
                 where: {
                     uniquePatientId: numeroDossier
                 }
@@ -78,7 +83,7 @@ export class PatientRepository extends Repository<Patient> {
 
             //famille 
             nomPere: data.famille.nomPere,
-            nomMere: data.famille.nomPere,
+            nomMere: data.famille.nomMere,
             tuteur: data.famille.tuteur,
             numeroPere: data.famille.numeroPere,
             numeroMere: data.famille.numeroMere,
@@ -114,7 +119,7 @@ export class PatientRepository extends Repository<Patient> {
         let numeroDossier = ""
 
         for (let i = 0; i < MAX_FIND; i++) {
-            const numeroDossier = PatientIdGenerated(data.identity.nom, true);
+            numeroDossier = PatientIdGenerated(data.identity.nom, true);
 
             const patient = await this.findOne({
                 where: {
@@ -159,7 +164,10 @@ export class PatientRepository extends Repository<Patient> {
 
 
             // delay du dossier patient 
-            dateLimiteRegulation: new Date().getHours() + parseInt(process.env.PROVISIONAL_DOSSIER_DELAY_HOURS || "48"),
+            dateLimiteRegulation: new Date(
+                Date.now() +
+                parseInt(process.env.PROVISIONAL_DOSSIER_DELAY_HOURS || "48", 10) * 60 * 60 * 1000
+            ),
 
             // auteur
             createdBy: data.createdBy,
@@ -441,7 +449,7 @@ export class PatientRepository extends Repository<Patient> {
     // fusion du patient 
     async fusionPatient(data: MergePatientInput) {
 
-        const patient = this.dataSource.transaction(async (manager) => {
+        const patient = await this.dataSource.transaction(async (manager) => {
 
             // la source 
             const source = await manager.findOne(Patient, {
@@ -488,7 +496,9 @@ export class PatientRepository extends Repository<Patient> {
                 // identité 
                 nom: data.ChampsAConserver?.identity?.nom ?? target.nom ?? source.nom,
                 prenom: data.ChampsAConserver?.identity?.prenom ?? target.prenom ?? source.prenom,
-                dateNaissance: data.ChampsAConserver?.identity?.dateNaissance.toDateString() ?? target.dateNaissance ?? source.dateNaissance,
+                dateNaissance: data.ChampsAConserver?.identity?.dateNaissance
+                    ? new Date(data.ChampsAConserver.identity.dateNaissance).toDateString()
+                    : target.dateNaissance ?? source.dateNaissance,
                 lieuNaissance: data.ChampsAConserver?.identity?.lieuNaissance ?? target.lieuNaissance ?? source.lieuNaissance,
                 age: data.ChampsAConserver?.identity?.age ?? target.age ?? source.age,
                 genre: data.ChampsAConserver?.identity?.genre ?? target.genre ?? source.genre,
@@ -514,9 +524,15 @@ export class PatientRepository extends Repository<Patient> {
                 numCMU: data.ChampsAConserver?.uniqueIdentity?.numeroCMU ?? target.numCMU ?? source.numCMU,
             })
 
-            // deplacer les dossier vers la cible 
+            // `merge` ne fait que muter l'entité en mémoire : sans cette
+            // sauvegarde, l'arbitrage des champs et les valeurs reprises de la
+            // source seraient perdus et la fusion ne consoliderait rien.
+            await manager.save(Patient, patient)
 
-            this.manager.update(ArchivDossier, {
+            // deplacer les dossier vers la cible
+            // `manager` (et non `this.manager`) : ces écritures doivent vivre
+            // dans la transaction, sinon un échec ultérieur les laisserait en place.
+            await manager.update(ArchivDossier, {
                 patient: {
                     id: source.id
                 },
@@ -533,8 +549,8 @@ export class PatientRepository extends Repository<Patient> {
             // sauvegarde de l'info avant soft delete
             const saveMergeIdSource = await manager.save(Patient, source)
             
-            // softe delete de la source 
-            await this.manager.softDelete(Patient, saveMergeIdSource)
+            // softe delete de la source
+            await manager.softDelete(Patient, saveMergeIdSource.id)
 
             // insere patient mergeLog
             const patientMergeLog = this.manager.create(PatientMergeLog, {
@@ -557,11 +573,11 @@ export class PatientRepository extends Repository<Patient> {
                 mergedBy: data.mergeBy
             })
 
-            manager.save(PatientMergeLog, patientMergeLog)
+            const savedMergeLog = await manager.save(PatientMergeLog, patientMergeLog)
 
             return {
                 target: patient,
-                mergeLog: PatientMergeLog
+                mergeLog: savedMergeLog
             }
         })
 

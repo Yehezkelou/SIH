@@ -68,21 +68,19 @@ export function Time() {
         tracking-wide select-none">
 
             {/* Premier bloc : L'Heure avec un style imposant */}
-            <div className="text-5xl font-extrabold text-gray-800 
-            dark:text-slate-50
+            <div className="text-5xl font-extrabold text-surface-text
             drop-shadow-sm tabular-nums">
 
                 {heures}:{minutes}:{secondes}
             </div>
 
             {/* Second bloc : Date et Fuseau Horaire */}
-            <div className="text-sm font-medium text-gray-500 mt-1.5 capitalize flex 
-            dark:text-gray-50
+            <div className="text-sm font-medium text-muted mt-1.5 capitalize flex 
             items-center gap-2">
 
                 <span>{jourSemaine} {jourDuMois} {mois} {annee}</span>
-                <span className="text-xs bg-slate-800 dark:bg-slate-100 text-gray-50 px-2 py-0.5 rounded-full 
-                font-semibold uppercase dark:text-slate-800">
+                <span className="text-xs bg-active text-active-text px-2 py-0.5 rounded-full
+                font-semibold uppercase">
 
                     {fuseauHoraireFormatte}
                 </span>

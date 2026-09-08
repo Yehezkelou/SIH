@@ -18,7 +18,7 @@ import { usePin } from "./components/Pin/usePin";
 export function LoginForm(){
 
     const {mutate: login, isPending, error} = useLoginPassword()
-    const {mutate: loginPin, isPending: isPendingPin, error: errorPin}  = useLoginPin()
+    const {mutate: loginPin} = useLoginPin()
     
     const [identifier, setIdentifier] = useState("")
     const { password, setPassword } = usePassword()
@@ -52,14 +52,14 @@ export function LoginForm(){
                 animate={{ scaleY: 1 }}
                 transition={{ duration: 0.8, ease: "easeOut" }}
                 style={{ originY: 1 }}
-                className="border-r-2 border-slate-200 dark:border-white/20 self-stretch mx-6"
+                className="border-r-2 border-border/12 self-stretch mx-6"
             />
             <motion.form 
                 onSubmit={isPinEnabled ? handleSubmitPin : handleSubmit} 
                 initial={{x: -30, opacity: 0}}
                 animate={{x: 0, opacity: 1}}
                 transition={{duration: 0.8, ease: "easeInOut", delay: 0.8}}
-                className="space-y-4 w-full max-w-md p-8 bg-white/80 dark:bg-slate-900/60 border border-slate-200 dark:border-white/5 rounded-2xl shadow-xl dark:shadow-2xl backdrop-blur-sm">
+                className="space-y-4 w-full max-w-md p-8 bg-surface/80 border border-border/8 rounded-2xl shadow-xl backdrop-blur-sm">
                 {errorMessage && <Alert type="error" message={errorMessage} />}
 
                 {isPinEnabled 
@@ -100,8 +100,7 @@ export function LoginForm(){
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     className="p-3 rounded-full shadow-lg backdrop-blur-md flex items-center justify-center transition-colors mt-2 border
-                               bg-white/80 text-slate-800 border-slate-200/80 hover:bg-slate-100/90
-                               dark:bg-white/10 dark:text-white dark:border-white/10 dark:hover:bg-white/15"
+                               bg-surface/80 text-surface-text border-border/8 hover:bg-hover/6"
                     title="Plus d'options ?"
                 > 
                     <HelpCircle className="h-5 w-5" />

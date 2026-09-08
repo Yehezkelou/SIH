@@ -1,5 +1,4 @@
-import { IdCard } from 'lucide-react';
-import { PagePlaceholder } from '@/components/ui/PagePlaceholder';
+import { PersonnelDetailView } from '@/features/personnel';
 
 export default async function PersonnelDetailPage({
     params,
@@ -8,11 +7,5 @@ export default async function PersonnelDetailPage({
 }) {
     const { id } = await params;
 
-    return (
-        <PagePlaceholder
-            icon={IdCard}
-            title="Fiche agent"
-            description={`La fiche détaillée de l'agent ${id} n'est pas encore implémentée.`}
-        />
-    );
+    return <PersonnelDetailView agentId={id} />;
 }

@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "baseUrl": ".",
     "paths": {
       "@org/contracts" : ["./libs/contracts/src/index.ts"],
       "@org/database" : ["./libs/database/src/index.ts"]

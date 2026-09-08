@@ -12,24 +12,34 @@ export function useLoginPassword(){
     return useMutation({
         mutationFn : LoginRequestPassword,
         onSuccess: (data) => {
-            authStorage.setSession(data.accessToken, data.refreshToken)
-            router.push("/")
+            if (data.mfaRequired && data.mfaToken) {
+                if (typeof window !== "undefined") {
+                    sessionStorage.setItem("sih_mfa_token", data.mfaToken);
+                }
+                router.push(`/mfa?token=${encodeURIComponent(data.mfaToken)}`);
+                return;
+            }
+
+            if (data.accessToken && data.refreshToken) {
+                authStorage.setSession(data.accessToken, data.refreshToken);
+                window.location.href = "/";
+            }
         },
         onError : (error : any) => {
-            console.error(error)
+            console.error(error);
         }
-    })
+    });
 }
 
 // Pin 
 export function useLoginPin(){
-    const router = useRouter()
-
     return useMutation({
         mutationFn : LoginRequestPin,
         onSuccess: (data) => {
-            authStorage.setSession(data.accessToken, data.refreshToken)
-            router.push("/")
+            if (data.accessToken && data.refreshToken) {
+                authStorage.setSession(data.accessToken, data.refreshToken);
+                window.location.href = "/";
+            }
         },
         onError : (error : any) => {
             console.error(error)

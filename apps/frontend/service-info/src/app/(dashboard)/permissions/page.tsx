@@ -153,11 +153,11 @@ export default function PermissionsPage() {
             ) : isError ? (
                 <PermissionStateCard
                     variant="error"
-                    title="Impossible de charger les permissions"
+                    title="Impossible de charger les permissions et rôles"
                     description={
                         error instanceof Error
                             ? error.message
-                            : 'Une erreur est survenue lors de la récupération du catalogue auprès du service d’authentification.'
+                            : 'Une erreur est survenue lors de la communication avec le service d’authentification pour charger les permissions et les profils de rôles.'
                     }
                     onAction={refetchAll}
                     actionLabel="Réessayer"

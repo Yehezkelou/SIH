@@ -10,6 +10,7 @@
     "dev:auth-service": "nx serve @org/Auth-Service",
     "dev:front-auth": "nx serve @org/auth-service",
     "dev:front-info" : "nx serve @org/info",
+    "dev:front-admission": "nx serve @org/admission",
     "dev:all": "pnpm run dev:patient & pnpm run dev:admission & pnpm run dev:api-gateway & pnpm run dev:auth-service",
     "graph": "nx graph"
   },

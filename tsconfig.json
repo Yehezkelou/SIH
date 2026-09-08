@@ -44,6 +44,9 @@
     },
     {
       "path": "./apps/frontend/service-info"
+    },
+    {
+      "path": "./apps/frontend/admission-service"
     }
   ]
 }

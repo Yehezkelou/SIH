@@ -10,49 +10,84 @@ import { motion, AnimatePresence } from "framer-motion";
 import React, { useState } from "react";
 
 
+import { ServiceButtons } from "@/components/ui/Module/ServiceButtons";
+
 export default function HomePage() {
     const [isSideBarOpen, setIsSideBarOpen] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
     const { Module: modules, recentModules, handleModuleClick } = UseModule();
+
+    const handleSearchSubmit = () => {
+        const q = searchQuery.toLowerCase().trim();
+        if (!q) return;
+        const match = (Object.keys(modules) as (keyof typeof modules)[]).find((key) => {
+            const item = modules[key];
+            return (
+                item.title.toLowerCase().includes(q) ||
+                item.description.toLowerCase().includes(q) ||
+                key.toLowerCase().includes(q)
+            );
+        });
+        if (match) {
+            const item = modules[match];
+            handleModuleClick(match);
+            if (item.url && item.url !== '#') {
+                window.location.href = item.url;
+            }
+        }
+    };
 
     return (
         <div className="w-full relative min-h-screen">
             <div className="fixed font-sans inset-0 flex items-center justify-center ">
-                <span className="text-[600px] font-black text-gray-200 dark:text-slate-700/90 opacity-50">
+                <span className="text-[600px] font-black text-muted/20 opacity-50">
                     O
                 </span>
             </div>
             <div className="w-full h-[50px] flex items-center justify-end absolute top-2 left-0 z-30">
                 <TopBar onMenuClick={() => setIsSideBarOpen(true)} />
             </div>
-            <div className="absolute top-[40%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-4 w-full max-w-[600px] px-4">
+            <div className="absolute top-[42%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-4 w-full max-w-[640px] px-4">
                 <Time />
-                <SearchBar />
+                <SearchBar 
+                    value={searchQuery}
+                    onChange={setSearchQuery}
+                    onSubmit={handleSearchSubmit}
+                />
 
-                {/* Cadre des modules récents cliqués (3 max) */}
+                {/* Boutons de service en bas de la barre de recherche */}
+                <ServiceButtons searchQuery={searchQuery} />
+
+                {/* Modules récents (si consultés récemment) */}
                 <AnimatePresence>
-                    {recentModules.length > 0 && (
+                    {!searchQuery && recentModules.length > 0 && (
                         <motion.div
-                            initial={{ opacity: 0, y: -10, scale: 0.95 }}
-                            animate={{ opacity: 1, y: 0, scale: 1 }}
-                            exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                            transition={{ duration: 0.2 }}
-                            className="flex items-center gap-2 mt-1 flex-wrap justify-center"
+                            initial={{ opacity: 0, y: -5 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0 }}
+                            className="flex items-center gap-2 mt-1 flex-wrap justify-center text-xs text-muted"
                         >
+                            <span className="text-[11px] font-medium text-muted">Récents :</span>
                             {recentModules.map((key) => {
                                 const item = modules[key as keyof typeof modules];
                                 if (!item) return null;
                                 const Icon = item.icon;
+                                const isAvailable = Boolean(item.url && item.url !== '#');
                                 return (
-                                    <motion.button
+                                    <motion.a
                                         key={key}
-                                        onClick={() => handleModuleClick(key)}
-                                        whileHover={{ scale: 1.05, y: -1 }}
+                                        href={isAvailable ? item.url : undefined}
+                                        onClick={(e) => {
+                                            handleModuleClick(key);
+                                            if (!isAvailable) e.preventDefault();
+                                        }}
+                                        whileHover={{ scale: 1.05 }}
                                         whileTap={{ scale: 0.95 }}
-                                        className="flex items-center gap-2 px-3.5 py-1.5 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md rounded-full border border-slate-200 dark:border-white/10 text-xs font-semibold text-gray-700 dark:text-gray-200 shadow-sm hover:bg-white dark:hover:bg-slate-800 transition-all cursor-pointer"
+                                        className="flex items-center gap-1.5 px-2.5 py-1 bg-surface/60 backdrop-blur-xs rounded-full border border-border/8 text-[11px] font-medium text-surface-text hover:bg-surface transition-all cursor-pointer"
                                     >
-                                        <Icon size={14} className="text-blue-500" />
+                                        <Icon size={12} className="text-primary" />
                                         <span>{item.title}</span>
-                                    </motion.button>
+                                    </motion.a>
                                 );
                             })}
                         </motion.div>

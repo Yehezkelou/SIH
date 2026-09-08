@@ -12,12 +12,12 @@ export default function AuthLayout({
         dark:bg-gradient-to-br dark:from-slate-950 dark:via-[#070d19] dark:to-black">
       {/* Lueur bleue diffuse au centre derrière le formulaire */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 
-      bg-blue-400/5 
-      w-[600px] h-[600px] dark:bg-blue-600/15 rounded-full blur-[140px] -z-10" />
+      bg-primary/5
+      w-[600px] h-[600px] dark:bg-primary/15 rounded-full blur-[140px] -z-10" />
       
       {/* Deuxième lueur violette/indigo décalée pour enrichir le dégradé */}
       <div className="absolute top-1/4 left-1/3 w-[400px] h-[400px]
-      bg-indigo-500/5 
+      bg-indigo-500/5
        dark:bg-indigo-500/10 rounded-full blur-[120px] -z-10" />
 
       {/* Formulaire parfaitement centré au milieu */}

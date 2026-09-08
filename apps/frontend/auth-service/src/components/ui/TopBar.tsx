@@ -1,42 +1,28 @@
-import { Menu, User } from "lucide-react";
-import { useState } from "react";
-import { User as UserBar } from "./User/User"
-import { useMe } from "@/features/me/hooks/UseMe";
+import { Menu } from "lucide-react";
+import React from "react";
+import { User } from "./User/User";
 
 interface TopBarProps {
     onMenuClick: () => void;
 }
 
-export function TopBar({ onMenuClick }: TopBarProps){
-    const [info, setInfo] = useState(false);
-    const user = useMe()
+export function TopBar({ onMenuClick }: TopBarProps) {
+    return (
+        <div className="flex items-center gap-3 px-4 py-2 select-none">
+            {/* Menu profil utilisateur autonome */}
+            <User />
 
-    const sizeIcon = 24;
-    return(
-        <div className="w-[200px] flex items-center justify-between px-4 py-2">
-            <button
-                className="opacity-80 relative border-2 border-bg-slate-800 hover:opacity-100 
-                p-2 cursor-pointer text-slate-800 dark:text-slate-50 rounded-full flex items-center 
-                justify-center gap-2 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all duration-200"
-
-                onClick={() => setInfo(true)}
-                onMouseLeave={() => setInfo(false)}
-            >
-                <span className="text-sm font-medium">{user.data?.user.nom}</span>
-                <User size={sizeIcon}/>
-                 {info && <UserBar name={user.data?.user.prenom} role={user.data?.user.personnelType} />}
-            </button>
+            {/* Bouton pour ouvrir la barre latérale des modules */}
             <button
                 onClick={onMenuClick}
-                className="opacity-80  hover:opacity-100 p-2 cursor-pointer text-slate-800 
-                dark:text-slate-50 dark:hover:text-slate-800 
-                rounded-full flex items-center justify-center hover:bg-slate-100 
-                transition-all duration-200"
+                className="p-2 rounded-full bg-surface/80 backdrop-blur-md border border-border/8 text-surface-text hover:text-primary hover:bg-surface shadow-xs hover:shadow-md transition-all cursor-pointer"
+                title="Tous les modules"
+                aria-label="Ouvrir le menu des modules"
             >
-                <Menu size={sizeIcon}/>
+                <Menu size={18} />
             </button>
         </div>
-    )
+    );
 }
 
 

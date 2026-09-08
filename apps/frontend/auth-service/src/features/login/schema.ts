@@ -16,15 +16,19 @@ export interface User {
     matricule : string;
     nom : string;
     prenom: string;
+    email?: string;
     personnelType : string;
     serviceAffectation : string | undefined;
     roles : string[];
-    permissions: string[]
+    permissions: string[];
+    mfaEnabled?: boolean;
 }
 export interface LoginTypeReponss {
     message : string;
-    accessToken : string;
-    refreshToken: string;
-    user : User;
+    accessToken?: string;
+    refreshToken?: string;
+    user?: User;
+    mfaRequired?: boolean;
+    mfaToken?: string;
 }
 

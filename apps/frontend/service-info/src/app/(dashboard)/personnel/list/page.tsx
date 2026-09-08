@@ -3,12 +3,14 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { UserPlus, Users, RefreshCw } from 'lucide-react';
-import { useListAgents } from '@/features/personnel/hooks/useApiPeronnel';
-import { QueryUsersParams } from '@/features/personnel/schema';
-import { PersonnelFilters } from '@/features/personnel/components/personnelFilters';
-import { PersonnelTable } from '@/features/personnel/components/PersonnelTable';
-import { PersonnelPagination } from '@/features/personnel/components/PersonnelPagination';
-import { PersonnelStateCard } from '@/features/personnel/components/PersonnelStateCard';
+import {
+    useListAgents,
+    QueryUsersParams,
+    PersonnelFilters,
+    PersonnelTable,
+    PersonnelPagination,
+    PersonnelStateCard,
+} from '@/features/personnel';
 import { ROUTES } from '@/config/routes';
 
 export default function PersonnelListPage() {

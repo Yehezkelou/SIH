@@ -1,29 +1,56 @@
+'use client';
 
-import { Search } from "lucide-react"
+import React from "react";
+import { Search, X } from "lucide-react";
 
+interface SearchBarProps {
+    value?: string;
+    onChange?: (value: string) => void;
+    onSubmit?: () => void;
+}
 
+export function SearchBar({ value = '', onChange, onSubmit }: SearchBarProps) {
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Enter' && onSubmit) {
+            e.preventDefault();
+            onSubmit();
+        }
+    };
 
-
-export function SearchBar(){
-    return(
-        <div className="px-3 py-3 w-full flex items-center justify-center bg-white shadow-md rounded-full">
-            
-            <div className="w-[100px] flex items-center justify-center gap-1.5">
-                <Search size={20} />
+    return (
+        <div className="px-4 py-3 w-full flex items-center bg-surface/95 backdrop-blur-md shadow-md hover:shadow-lg rounded-full border border-border/8 transition-all duration-200 focus-within:ring-2 focus-within:ring-primary/40 focus-within:border-primary">
+            <div className="flex items-center gap-2 pl-1 pr-3 text-surface-text">
+                <Search size={18} className="text-primary" />
                 <label 
-                    className="text-lg cursor-pointer select-none"
+                    className="text-base font-semibold cursor-pointer select-none tracking-wide"
                     htmlFor="search"
-                >Sih</label>
+                >
+                    SIH
+                </label>
             </div>
 
-            <div className="h-8 border border-gray-500 opacity-30 self-stretch mr-2"></div>
+            <div className="h-6 w-px bg-border/12 mr-3"></div>
+
             <input 
                 type="text"
                 id="search"
-                className="w-[450px] border-none outline-none bg-transparent"
-                placeholder="Bafs...."
-
+                value={value}
+                onChange={(e) => onChange?.(e.target.value)}
+                onKeyDown={handleKeyDown}
+                className="w-full border-none outline-none bg-transparent text-sm text-surface-text placeholder:text-muted"
+                placeholder="Rechercher un service (BAFS, Info, Hospitalisation...)"
+                autoComplete="off"
             />
+
+            {value && (
+                <button
+                    type="button"
+                    onClick={() => onChange?.('')}
+                    className="p-1 text-muted hover:text-surface-text rounded-full hover:bg-hover/6 transition-colors"
+                >
+                    <X size={16} />
+                </button>
+            )}
         </div>
-    )
+    );
 }
